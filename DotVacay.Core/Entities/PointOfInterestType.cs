@@ -4,7 +4,7 @@
     {
         Hotel,
         CarRental,
-        Restaurant,
+        Food,
         PlaceToVisit
     }
 }

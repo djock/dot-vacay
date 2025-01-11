@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -27,15 +28,12 @@ namespace DotVacay.API.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateTrip([FromBody] CreateTripDto createTripDto)
         {
-            Debug.WriteLine($"CreateTrip");
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            Debug.WriteLine($"User email from token: {userEmail}");
 
             var user = await _userManager.FindByEmailAsync(userEmail);
 
@@ -65,6 +63,35 @@ namespace DotVacay.API.Controllers
 
             return CreatedAtAction(nameof(GetTrip), new { id = trip.Id }, new { TripId = trip.Id, trip.Title, trip.Description });
         }
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAllTrips()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            Console.WriteLine("UserId " + userId);
+
+            var userWithTrips = await _context.Users
+                .Include(u => u.UserTrips)
+                    .ThenInclude(ut => ut.Trip)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (userWithTrips == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var trips = userWithTrips.UserTrips.Select(ut => new
+            {
+                ut.Trip.Id,
+                ut.Trip.Title,
+                ut.Trip.Description,
+                UserRole = ut.Role
+            }).ToList();
+
+            return Ok(trips);
+        }
+
 
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetTrip(int id)

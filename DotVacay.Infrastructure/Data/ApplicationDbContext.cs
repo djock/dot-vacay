@@ -27,7 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(ut => ut.TripId);
 
         modelBuilder.Entity<PointOfInterest>()
-            .HasOne(p => p.Trip)
+            .HasOne<Trip>()
             .WithMany(t => t.PointsOfInterest)
             .HasForeignKey(p => p.TripId);
     }

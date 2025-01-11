@@ -1,16 +1,15 @@
-﻿using System.Text.Json.Serialization;
+﻿using DotVacay.Core.Entities;
 
-namespace DotVacay.Core.Entities
+namespace DotVacay.Core.DTOs
 {
-    public class PointOfInterest
+    public class CreatePointOfInterestDto
     {
-        public int Id { get; set; }
+        public required int TripId { get; set; }
         public required string Title { get; set; }
         public string? Description { get; set; }
         public string? Url { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public PointOfInterestType Type { get; set; }
-        public int TripId { get; set; }
+        public required PointOfInterestType Type { get; set; }
     }
 }
