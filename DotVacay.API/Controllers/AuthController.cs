@@ -1,5 +1,6 @@
 ﻿using DotVacay.Core.DTOs;
 using DotVacay.Core.Entities;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -49,6 +50,15 @@ public class AuthController(UserManager<ApplicationUser> userManager, IConfigura
 
         return Unauthorized();
     }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+        return Ok(new { message = "Logged out successfully" });
+    }
+
 
     private string GenerateJwtToken(ApplicationUser user)
     {
