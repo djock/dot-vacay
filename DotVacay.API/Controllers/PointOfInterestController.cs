@@ -20,6 +20,8 @@ namespace DotVacay.API.Controllers
             _context = context;
         }
 
+        #region POST
+
         [HttpPost("create")]
         public async Task<IActionResult> CreatePointOfInterest([FromBody] CreatePointOfInterestDto poiDto)
         {
@@ -56,6 +58,10 @@ namespace DotVacay.API.Controllers
             return CreatedAtAction(nameof(GetPointOfInterest), new { id = pointOfInterest.Id }, pointOfInterest);
         }
 
+        #endregion
+
+
+        #region GET
 
         [HttpGet("getAll/{tripId}")]
         public async Task<IActionResult> GetAllPointsOfInterest(int tripId)
@@ -101,8 +107,166 @@ namespace DotVacay.API.Controllers
             return Ok(pointOfInterest);
         }
 
+        #endregion
 
-        [HttpDelete("{id}")]
+        #region PATCH
+
+        [HttpPatch("update/{id}/type")]
+        public async Task<IActionResult> UpdatePointOfInterestType(int id, [FromBody] PointOfInterestType newType)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.Type = newType;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/title")]
+        public async Task<IActionResult> UpdatePointOfInterestTitle(int id, [FromBody] string newTitle)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.Title = newTitle;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/description")]
+        public async Task<IActionResult> UpdatePointOfInterestDescription(int id, [FromBody] string newDescription)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.Description = newDescription;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/url")]
+        public async Task<IActionResult> UpdatePointOfInterestUrl(int id, [FromBody] string newUrl)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.Url = newUrl;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/coordinates")]
+        public async Task<IActionResult> UpdatePointOfInterestCoordinates(int id, [FromBody] UpdateCoordinatesDto coordinates)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.Latitude = coordinates.Latitude;
+            poi.Longitude = coordinates.Longitude;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/dates")]
+        public async Task<IActionResult> UpdatePointOfInterestDates(int id, [FromBody] UpdateDatesDto dates)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.StartDate = dates.StartDate;
+            poi.EndDate = dates.EndDate;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        [HttpPatch("update/{id}/tripDayIndex")]
+        public async Task<IActionResult> UpdatePointOfInterestTripDayIndex(int id, [FromBody] int? newTripDayIndex)
+        {
+            var poi = await _context.PointsOfInterest.FindAsync(id);
+            if (poi == null)
+            {
+                return NotFound("Point of interest not found");
+            }
+
+            if (!await UserHasAccessToTrip(poi.TripId))
+            {
+                return Forbid("You don't have permission to modify this point of interest");
+            }
+
+            poi.TripDayIndex = newTripDayIndex;
+            await _context.SaveChangesAsync();
+
+            return Ok(poi);
+        }
+
+        // Helper method to check if the current user has access to the trip
+        private async Task<bool> UserHasAccessToTrip(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return await _context.Trips.AnyAsync(t => t.Id == id && t.UserTrips.Any(ut => ut.UserId == userId));
+
+        }
+
+        #endregion
+
+
+        #region DELETE
+
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePointOfInterest(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -119,5 +283,7 @@ namespace DotVacay.API.Controllers
 
             return NoContent();
         }
+
+        #endregion
     }
 }
