@@ -60,7 +60,6 @@ namespace DotVacay.API.Controllers
 
         #endregion
 
-
         #region GET
 
         [HttpGet("getAll/{tripId}")]
@@ -262,7 +261,6 @@ namespace DotVacay.API.Controllers
         }
 
         #endregion
-
 
         #region DELETE
 

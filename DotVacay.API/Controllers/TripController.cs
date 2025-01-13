@@ -35,8 +35,7 @@ namespace DotVacay.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-
+            var userEmail = User.FindFirstValue(JwtRegisteredClaimNames.Email);
             var user = await _userManager.FindByEmailAsync(userEmail);
 
             if (user == null)
@@ -65,6 +64,64 @@ namespace DotVacay.API.Controllers
 
             return CreatedAtAction(nameof(GetTrip), new { id = trip.Id }, new { TripId = trip.Id, trip.Title, trip.Description });
         }
+
+        [HttpPost("join")]
+        public async Task<IActionResult> JoinTrip([FromBody] JoinTripDto joinTripDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userEmail = User.FindFirstValue(JwtRegisteredClaimNames.Email);
+
+            // If the above doesn't work, try with ClaimTypes.Email
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                userEmail = User.FindFirstValue(ClaimTypes.Email);
+            }
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest("Unable to retrieve user email.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(userEmail);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var trip = await _context.Trips
+                .Include(t => t.UserTrips)
+                .FirstOrDefaultAsync(t => t.Id == joinTripDto.TripId);
+
+            if (trip == null)
+            {
+                return NotFound("Trip not found.");
+            }
+
+            // Check if the user is already part of the trip
+            if (trip.UserTrips.Any(ut => ut.UserId == user.Id))
+            {
+                return BadRequest("You are already a member of this trip.");
+            }
+
+            var userTrip = new UserTrip
+            {
+                UserId = user.Id,
+                User = user,
+                Trip = trip,
+                Role = joinTripDto.Role
+            };
+
+            trip.UserTrips.Add(userTrip);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Successfully joined the trip.", TripId = trip.Id, UserRole = joinTripDto.Role });
+        }
+
 
         #endregion
 
