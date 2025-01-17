@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace DotVacay.API.Controllers
@@ -36,6 +35,20 @@ namespace DotVacay.API.Controllers
             }
 
             var userEmail = User.FindFirstValue(JwtRegisteredClaimNames.Email);
+
+            // If the above doesn't work, try with ClaimTypes.Email
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                userEmail = User.FindFirstValue(ClaimTypes.Email);
+            }
+
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return BadRequest("Unable to retrieve user email.");
+            }
+
+            Console.WriteLine("User email " + userEmail);
+
             var user = await _userManager.FindByEmailAsync(userEmail);
 
             if (user == null)
@@ -85,6 +98,8 @@ namespace DotVacay.API.Controllers
             {
                 return BadRequest("Unable to retrieve user email.");
             }
+
+            Console.WriteLine("User email " + userEmail);
 
             var user = await _userManager.FindByEmailAsync(userEmail);
 

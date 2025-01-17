@@ -62,10 +62,13 @@ public class AuthController(UserManager<ApplicationUser> userManager, IConfigura
 
     private string GenerateJwtToken(ApplicationUser user)
     {
+        var userEmail = user.Email != null ? user.Email : null;
+
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Email, userEmail),
+            new Claim(ClaimTypes.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.NormalizedUserName)
         };
