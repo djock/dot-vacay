@@ -4,7 +4,7 @@ namespace DotVacay.Core.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResult> RegisterAsync(RegisterRequest request);
-        Task<AuthResult> LoginAsync(LoginRequest request);
+        Task<RequestResult> RegisterAsync(RegisterRequest request);
+        Task<RequestResult> LoginAsync(LoginRequest request);
     }
 }

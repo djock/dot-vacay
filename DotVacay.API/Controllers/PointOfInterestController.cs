@@ -1,10 +1,9 @@
 ﻿using DotVacay.Application.DTOs;
-using DotVacay.Core.Entities;
 using DotVacay.Core.Enums;
-using DotVacay.Infrastructure.Data;
+using DotVacay.Core.Interfaces;
+using DotVacay.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace DotVacay.API.Controllers
@@ -12,51 +11,34 @@ namespace DotVacay.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class PointOfInterestController : ControllerBase
+    public class PointOfInterestController(IPointOfInterestService service) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IPointOfInterestService _service = service;
+        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
 
-        public PointOfInterestController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
 
         #region POST
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreatePointOfInterest([FromBody] CreatePointOfInterestDto poiDto)
+        public async Task<IActionResult> CreateAsync([FromBody] CreatePointOfInterestDto dto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var trip = await _context.Trips
-                .AsNoTracking()
-                .Include(t => t.UserTrips)
-                .FirstOrDefaultAsync(t => t.Id == poiDto.TripId);
-
-            if (trip == null)
+            if(string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Trip not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!trip.UserTrips.Any(ut => ut.UserId == userId))
-            {
-                return Forbid("You don't have permission to modify this trip");
-            }
+            var request = new CreatePointOfInterestRequest(
+                UserId,
+                dto.Title,
+                dto.Description,
+                dto.Url,
+                dto.Latitude,
+                dto.Longitude,
+                dto.Type,
+                dto.TripId);
 
-            var pointOfInterest = new PointOfInterest
-            {
-                Title = poiDto.Title,
-                Description = poiDto.Description,
-                Url = poiDto.Url,
-                Latitude = poiDto.Latitude,
-                Longitude = poiDto.Longitude,
-                Type = poiDto.Type,
-                TripId = poiDto.TripId,
-            };
-
-            _context.PointsOfInterest.Add(pointOfInterest);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetPointOfInterest), new { id = pointOfInterest.Id }, pointOfInterest);
+            var result = await _service.CreateAsync(request);
+            return HandleResult(result);
         }
 
         #endregion
@@ -64,47 +46,28 @@ namespace DotVacay.API.Controllers
         #region GET
 
         [HttpGet("getAll/{tripId}")]
-        public async Task<IActionResult> GetAllPointsOfInterest(int tripId)
+        public async Task<IActionResult> GetAllAsync(int tripId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Check if the user has access to the trip
-            var trip = await _context.Trips
-                .Include(t => t.UserTrips)
-                .FirstOrDefaultAsync(t => t.Id == tripId);
-
-            if (trip == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Trip not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!trip.UserTrips.Any(ut => ut.UserId == userId))
-            {
-                return Forbid("You don't have permission to view points of interest for this trip");
-            }
-
-            // Fetch all points of interest for the trip
-            var pointsOfInterest = await _context.PointsOfInterest
-                .Where(poi => poi.TripId == tripId)
-                .ToListAsync();
-
-            return Ok(pointsOfInterest);
+            var result = await _service.GetAllAsync(new(tripId, UserId));
+            return HandleResult(result);
         }
 
 
         [HttpGet("getById/{id}")]
-        public async Task<IActionResult> GetPointOfInterest(int id)
+        public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var pointOfInterest = await _context.PointsOfInterest
-                .FirstOrDefaultAsync(poi => poi.Id == id);
-
-            if (pointOfInterest == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            return Ok(pointOfInterest);
+            var result = await _service.GetByIdAsync(new(id, UserId));
+            return HandleResult(result);
         }
 
         #endregion
@@ -112,153 +75,87 @@ namespace DotVacay.API.Controllers
         #region PATCH
 
         [HttpPatch("update/{id}/type")]
-        public async Task<IActionResult> UpdatePointOfInterestType(int id, [FromBody] PointOfInterestType newType)
+        public async Task<IActionResult> UpdateTypeAsync(int id, [FromBody] PointOfInterestType newType)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.Type = newType;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateTypeAsync(new UpdateTypeRequest(id, newType, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/title")]
-        public async Task<IActionResult> UpdatePointOfInterestTitle(int id, [FromBody] string newTitle)
+        public async Task<IActionResult> UpdateTitleAsync(int id, [FromBody] string newTitle)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.Title = newTitle;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateTitleAsync(new UpdateTextRequest(id, newTitle, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/description")]
-        public async Task<IActionResult> UpdatePointOfInterestDescription(int id, [FromBody] string newDescription)
+        public async Task<IActionResult> UpdateDescriptionAsync(int id, [FromBody] string newDescription)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.Description = newDescription;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateDescriptionAsync(new UpdateTextRequest(id, newDescription, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/url")]
-        public async Task<IActionResult> UpdatePointOfInterestUrl(int id, [FromBody] string newUrl)
+        public async Task<IActionResult> UpdateUrlAsync(int id, [FromBody] string newUrl)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.Url = newUrl;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateUrlAsync(new UpdateTextRequest(id, newUrl, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/coordinates")]
-        public async Task<IActionResult> UpdatePointOfInterestCoordinates(int id, [FromBody] UpdateCoordinatesDto coordinates)
+        public async Task<IActionResult> UpdateCoordinatesAsync(int id, [FromBody] UpdateCoordinatesDto coordinates)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.Latitude = coordinates.Latitude;
-            poi.Longitude = coordinates.Longitude;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateCoordinatesAsync(new UpdateCoordinatesRequest(id, coordinates.Latitude!, coordinates.Longitude!, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/dates")]
-        public async Task<IActionResult> UpdatePointOfInterestDates(int id, [FromBody] UpdateDatesDto dates)
+        public async Task<IActionResult> UpdateDatesAsync(int id, [FromBody] UpdateDatesDto dates)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.StartDate = dates.StartDate;
-            poi.EndDate = dates.EndDate;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
+            var result = await _service.UpdateDatesAsync(new UpdateDatesRequest(id, dates.StartDate, dates.EndDate, UserId));
+            return HandleResult(result);
         }
 
         [HttpPatch("update/{id}/tripDayIndex")]
-        public async Task<IActionResult> UpdatePointOfInterestTripDayIndex(int id, [FromBody] int? newTripDayIndex)
+        public async Task<IActionResult> UpdateTripDayIndexAsync(int id, [FromBody] int? newTripDayIndex)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(id);
-            if (poi == null)
+            if (string.IsNullOrEmpty(UserId))
             {
-                return NotFound("Point of interest not found");
+                return BadRequest("UserId not found");
             }
 
-            if (!await UserHasAccessToTrip(poi.TripId))
-            {
-                return Forbid("You don't have permission to modify this point of interest");
-            }
-
-            poi.TripDayIndex = newTripDayIndex;
-            await _context.SaveChangesAsync();
-
-            return Ok(poi);
-        }
-
-        // Helper method to check if the current user has access to the trip
-        private async Task<bool> UserHasAccessToTrip(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return await _context.Trips.AnyAsync(t => t.Id == id && t.UserTrips.Any(ut => ut.UserId == userId));
-
+            var result = await _service.UpdateTripDayIndexAsync(new UpdateTripDayIndexRequest(id, newTripDayIndex, UserId));
+            return HandleResult(result);
         }
 
         #endregion
@@ -266,23 +163,25 @@ namespace DotVacay.API.Controllers
         #region DELETE
 
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeletePointOfInterest(int id)
+        public async Task<IActionResult> DeleteAsync(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var pointOfInterest = await _context.PointsOfInterest
-                .FirstOrDefaultAsync(poi => poi.Id == id);
-
-            if (pointOfInterest == null)
-            {
-                return NotFound("Point of interest not found");
-            }
-
-            _context.PointsOfInterest.Remove(pointOfInterest);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var result = await _service.DeleteAsync(new(id, UserId));
+            return HandleResult(result);
         }
 
         #endregion
+
+        private IActionResult HandleResult(RequestResult result)
+        {
+            return result.Success
+                ? result.Data != null ? Ok(result.Data) : Ok()
+                : result.Errors?.First() switch
+                {
+                    "Forbidden" => Forbid(),
+                    "Trip not found" => NotFound(result.Errors),
+                    "Point not found" => NotFound(result.Errors),
+                    _ => BadRequest(result.Errors)
+                };
+        }
     }
 }

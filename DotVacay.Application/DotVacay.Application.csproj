@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DotVacay.Core\DotVacay.Core.csproj" />
+    <ProjectReference Include="..\DotVacay.Infrastructure\DotVacay.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

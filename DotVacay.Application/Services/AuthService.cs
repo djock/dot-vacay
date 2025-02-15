@@ -1,12 +1,11 @@
-﻿using DotVacay.Core.Entities;
+﻿using DotVacay.Core.Common;
+using DotVacay.Core.Entities;
 using DotVacay.Core.Interfaces;
 using DotVacay.Core.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
@@ -18,19 +17,19 @@ namespace DotVacay.Application.Services
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly IConfiguration _configuration = configuration;
 
-        public async Task<AuthResult> LoginAsync(LoginRequest request)
+        public async Task<RequestResult> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 var token = GenerateJwtToken(user);
-                return new AuthResult(true, token);
+                return new RequestResult(true, token);
             }
 
-            return new AuthResult(false, Errors: ["Invalid credentials"]);  
+            return DomainErrors.Auth.InvalidCredentials;  
         }
 
-        public async Task<AuthResult> RegisterAsync(RegisterRequest request)
+        public async Task<RequestResult> RegisterAsync(RegisterRequest request)
         {
             var user = new ApplicationUser
             {
@@ -43,8 +42,8 @@ namespace DotVacay.Application.Services
             var result = await _userManager.CreateAsync(user, request.Password);
 
             return result.Succeeded
-                ? new AuthResult(true)
-                : new AuthResult(false, Errors: result.Errors.Select(e => e.Description));
+                ? new RequestResult(true)
+                : new RequestResult(false, Errors: result.Errors.Select(e => e.Description));
         }
 
         private string GenerateJwtToken(ApplicationUser user)

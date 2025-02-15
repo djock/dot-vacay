@@ -1,5 +1,4 @@
-﻿
-using DotVacay.Core.Enums;
+﻿using DotVacay.Core.Enums;
 
 namespace DotVacay.Application.DTOs
 {

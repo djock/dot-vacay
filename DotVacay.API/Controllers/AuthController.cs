@@ -13,13 +13,11 @@ public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
 
-
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    public async Task<IActionResult> RegisterAsync([FromBody] RegisterDto dto)
     {
         var request = new RegisterRequest(
             dto.Email,
-
             dto.Password,
             dto.FirstName,
             dto.LastName);
@@ -32,19 +30,18 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto
-        )
+    public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
     {
         var request = new LoginRequest(dto.Email, dto.Password);
         var result = await _authService.LoginAsync(request);
 
         return result.Success
-            ? Ok(new { message = result.Token })
+            ? Ok(new { message = result.Data })
             : Unauthorized(new { errors = result.Errors });
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> LogoutAsync()
     {
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
