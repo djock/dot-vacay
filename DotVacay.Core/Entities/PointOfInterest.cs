@@ -1,4 +1,6 @@
-﻿namespace DotVacay.Core.Entities
+﻿using DotVacay.Core.Enums;
+
+namespace DotVacay.Core.Entities
 {
     public class PointOfInterest
     {

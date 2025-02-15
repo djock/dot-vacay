@@ -1,4 +1,4 @@
-﻿using DotVacay.Core.DTOs;
+﻿using DotVacay.Application.DTOs;
 using DotVacay.Core.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;

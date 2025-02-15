@@ -1,5 +1,6 @@
-﻿using DotVacay.Core.DTOs;
+﻿using DotVacay.Application.DTOs;
 using DotVacay.Core.Entities;
+using DotVacay.Core.Enums;
 using DotVacay.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

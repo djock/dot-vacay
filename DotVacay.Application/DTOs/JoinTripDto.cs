@@ -1,6 +1,6 @@
-﻿using DotVacay.Core.Entities;
+﻿using DotVacay.Core.Enums;
 
-namespace DotVacay.Core.DTOs
+namespace DotVacay.Application.DTOs
 {
     public class JoinTripDto
     {

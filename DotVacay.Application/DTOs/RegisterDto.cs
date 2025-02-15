@@ -1,4 +1,4 @@
-﻿namespace DotVacay.Core.DTOs
+﻿namespace DotVacay.Application.DTOs
 {
     public class RegisterDto
     {
