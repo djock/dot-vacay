@@ -2,9 +2,5 @@
 
 namespace DotVacay.Application.DTOs
 {
-    public class JoinTripDto
-    {
-        public int TripId { get; set; }
-        public UserTripRole Role { get; set; }
-    }
+    public record JoinTripDto(int TripId, UserTripRole Role);
 }

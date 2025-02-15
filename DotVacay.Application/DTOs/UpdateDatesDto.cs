@@ -1,8 +1,4 @@
 ﻿namespace DotVacay.Application.DTOs
 {
-    public class UpdateDatesDto
-    {
-        public DateTimeOffset? StartDate { get; set; }
-        public DateTimeOffset? EndDate { get; set; }
-    }
+    public record UpdateDatesDto(DateTimeOffset? StartDate, DateTimeOffset? EndDate);
 }

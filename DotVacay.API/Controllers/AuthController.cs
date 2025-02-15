@@ -1,54 +1,46 @@
 ﻿using DotVacay.Application.DTOs;
-using DotVacay.Core.Entities;
+using DotVacay.Core.Interfaces;
+using DotVacay.Core.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace DotVacay.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration) : ControllerBase
+public class AuthController(IAuthService authService) : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly IAuthService _authService = authService;
+
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto model)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var user = new ApplicationUser
-        {
-            UserName = model.Email,
-            Email = model.Email,
-            FirstName = model.FirstName,
-            LastName = model.LastName
-        };
+        var request = new RegisterRequest(
+            dto.Email,
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+            dto.Password,
+            dto.FirstName,
+            dto.LastName);
 
-        if (result.Succeeded)
-        {
-            return Ok(new { message = "User registered successfully" });
-        }
+        var result = await _authService.RegisterAsync(request);
 
-        return BadRequest(result.Errors);
+        return result.Success
+            ? Ok(new { message = "User registered successfully" })
+            : BadRequest(new { errors = result.Errors });
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto model)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto
+        )
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-        {
-            var token = GenerateJwtToken(user);
-            return Ok(new { token });
-        }
+        var request = new LoginRequest(dto.Email, dto.Password);
+        var result = await _authService.LoginAsync(request);
 
-        return Unauthorized();
+        return result.Success
+            ? Ok(new { message = result.Token })
+            : Unauthorized(new { errors = result.Errors });
     }
 
     [HttpPost("logout")]
@@ -57,34 +49,5 @@ public class AuthController(UserManager<ApplicationUser> userManager, IConfigura
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         return Ok(new { message = "Logged out successfully" });
-    }
-
-
-    private string GenerateJwtToken(ApplicationUser user)
-    {
-        var userEmail = user.Email != null ? user.Email : null;
-
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, userEmail),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.NormalizedUserName)
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["Jwt:ExpireDays"]));
-
-        var token = new JwtSecurityToken(
-            _configuration["Jwt:Issuer"],
-            _configuration["Jwt:Audience"],
-            claims,
-            expires: expires,
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
