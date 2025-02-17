@@ -1,0 +1,40 @@
+﻿@model DotVacay.Web.Models.LoginModel
+
+<div class="container mt-5">
+    <h2 class="text-center">Log In</h2>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["FailMessage"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
+    }
+
+    <form asp-action="LogIn" method="post" class="mt-4">
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" type="email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Log In</button>
+    </form>
+
+    <p class='text-center mt-3'>
+        Don't have an account?
+        <a href="/Registration/Register">Register here</a>.
+    </p>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

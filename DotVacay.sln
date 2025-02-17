@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotVacay.Application", "Dot
 		{827A038E-82AF-4B13-9C99-525A350E88A7} = {827A038E-82AF-4B13-9C99-525A350E88A7}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotVacay.Web", "DotVacay.Web\DotVacay.Web.csproj", "{4146AD53-A153-4F81-BDE9-5703C356229C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{9F583331-A226-418B-8831-7BDF71960F21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F583331-A226-418B-8831-7BDF71960F21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F583331-A226-418B-8831-7BDF71960F21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4146AD53-A153-4F81-BDE9-5703C356229C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4146AD53-A153-4F81-BDE9-5703C356229C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4146AD53-A153-4F81-BDE9-5703C356229C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4146AD53-A153-4F81-BDE9-5703C356229C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

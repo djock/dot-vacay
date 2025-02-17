@@ -78,6 +78,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowWebApp", policy => {
+        policy.WithOrigins("https://localhost:7076", "http://localhost:5035")  // MVC project's URL
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -100,5 +108,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors("AllowWebApp");
 
 app.Run();

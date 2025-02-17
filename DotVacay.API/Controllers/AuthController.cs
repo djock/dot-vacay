@@ -35,6 +35,8 @@ public class AuthController(IAuthService authService) : ControllerBase
         var request = new LoginRequest(dto.Email, dto.Password);
         var result = await _authService.LoginAsync(request);
 
+        Console.WriteLine("dto " + dto.ToString());
+
         return result.Success
             ? Ok(new { message = result.Data })
             : Unauthorized(new { errors = result.Errors });
