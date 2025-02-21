@@ -1,5 +1,6 @@
 ﻿using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
 
 namespace DotVacay.Web.Controllers
 {
@@ -30,7 +31,8 @@ namespace DotVacay.Web.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = "Registration successful!";
+                await StoreAuthToken(response.Content);
+
                 return RedirectToAction("Index", "App");
             }
 
@@ -52,8 +54,6 @@ namespace DotVacay.Web.Controllers
                 return View();
             }
 
-            Console.WriteLine(model.ToString());
-
             var client = clientFactory.CreateClient("ApiClient");
             var response = await client.PostAsJsonAsync("api/Auth/login", new
             {
@@ -61,16 +61,39 @@ namespace DotVacay.Web.Controllers
                 model.Password
             });
 
-            Console.WriteLine(response.ToString());
-
             if(response.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = "Login successful!";
+                await StoreAuthToken(response.Content);
+
                 return RedirectToAction("Index", "App");
             }
 
             TempData["FailMessage"] = "Something went wrong!";
             return View(model);
         }
+
+        private async Task StoreAuthToken(HttpContent httpContent)
+        {
+            try {
+                // Read the response content to extract the token
+                var responseContent = await httpContent.ReadAsStringAsync();
+                var jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(responseContent);
+
+                string token = jsonResponse?.token?.ToString(); 
+
+                HttpContext.Response.Cookies.Append("token", token,
+                     options: new Microsoft.AspNetCore.Http.CookieOptions
+                     {
+                         Expires = DateTime.Now.AddMinutes(60),
+                         HttpOnly = true, // Prevent client-side access
+                         Secure = true    // Ensure it is sent over HTTPS
+                     });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
     }
 }

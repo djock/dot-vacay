@@ -5,9 +5,9 @@ using System.Net.Http.Headers;
 
 namespace DotVacay.Web.Controllers
 {
-    public class AppController(IHttpClientFactory clientFactory) : Controller
+    public class TripController(IHttpClientFactory clientFactory) : Controller
     {
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int tripId)
         {
             var token = GetAuthToken();
 
@@ -20,24 +20,24 @@ namespace DotVacay.Web.Controllers
             var client = clientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await client.GetAsync("api/Trip/getAll");
+            var response = await client.GetAsync($"api/Trip/getById/{tripId}");
 
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var trips = JsonConvert.DeserializeObject<List<Trip>>(responseContent);
+                var trip = JsonConvert.DeserializeObject<Trip>(responseContent);
 
-                // Pass the trips to the view
-                return View(trips);
+                // Pass the specific trip to the view
+                return View(trip);
             }
 
             TempData["FailMessage"] = "Failed to load trips.";
-            return View(new List<Trip>());
+            return View(null);
         }
 
         private string GetAuthToken()
         {
-            if (HttpContext.Request.Cookies.TryGetValue("token", out var token) )
+            if (HttpContext.Request.Cookies.TryGetValue("token", out var token))
             {
                 return token;
             }

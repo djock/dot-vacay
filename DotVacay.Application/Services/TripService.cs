@@ -91,7 +91,7 @@ namespace DotVacay.Application.Services
                 return DomainErrors.Trip.UserNotMember;
 
             var userTrip = trip.UserTrips.First(ut => ut.UserId == request.UserId);
-            return new RequestResult(true, new { trip.Id, trip.Title, trip.Description, userTrip.Role });
+            return new RequestResult(true, new { trip.Id, trip.Title, trip.Description, userTrip.Role, trip.PointsOfInterest });
         }
 
         public async Task<RequestResult> JoinAsync(JoinTripRequest request)

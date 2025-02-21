@@ -25,7 +25,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await _authService.RegisterAsync(request);
 
         return result.Success
-            ? Ok(new { message = "User registered successfully" })
+            ? Ok(new { token = result.Data })
             : BadRequest(new { errors = result.Errors });
     }
 
@@ -38,7 +38,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         Console.WriteLine("dto " + dto.ToString());
 
         return result.Success
-            ? Ok(new { message = result.Data })
+            ? Ok(new { token = result.Data })
             : Unauthorized(new { errors = result.Errors });
     }
 

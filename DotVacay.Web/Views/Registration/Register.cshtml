@@ -1,39 +1,44 @@
 ﻿@model DotVacay.Web.Models.RegistrationModel
 
-<div class="container mt-5">
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5" style="max-width:400px; margin:auto;">
     <h2 class="text-center">Register</h2>
     <form asp-action="Register" method="post" class="mt-4">
         <div class="mb-3">
-            <label asp-for="FirstName" class="form-label"></label>
-            <input asp-for="FirstName" class="form-control" />
+            <input asp-for="FirstName" class="form-control" placeholder="First Name" />
             <span asp-validation-for="FirstName" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="LastName" class="form-label"></label>
-            <input asp-for="LastName" class="form-control" />
+            <input asp-for="LastName" class="form-control" placeholder="Last Name" />
             <span asp-validation-for="LastName" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" type="email" class="form-control" />
+            <input asp-for="Email" type="email" class="form-control" placeholder="Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Password" class="form-label"></label>
-            <input asp-for="Password" type="password" class="form-control" />
+            <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="ConfirmPassword" class="form-label"></label>
-            <input asp-for="ConfirmPassword" type="password" class="form-control" />
+            <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Register</button>
+
+        <p class='text-center mt-3'>
+            Already have an account?
+            <a href="/Registration/Login">Log in</a>.
+        </p>
     </form>
 </div>
 

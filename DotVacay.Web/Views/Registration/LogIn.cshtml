@@ -1,12 +1,12 @@
 ﻿@model DotVacay.Web.Models.LoginModel
 
-<div class="container mt-5">
-    <h2 class="text-center">Log In</h2>
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
-    }
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
+<div class="container mt-5" style="max-width:400px; margin:auto;">
+    <h2 class="text-center">Log In</h2>
     @if (TempData["FailMessage"] != null)
     {
         <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
@@ -15,14 +15,12 @@
     <form asp-action="LogIn" method="post" class="mt-4">
 
         <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" type="email" class="form-control" />
+            <input asp-for="Email" type="email" class="form-control" placeholder="Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Password" class="form-label"></label>
-            <input asp-for="Password" type="password" class="form-control" />
+            <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
@@ -30,8 +28,8 @@
     </form>
 
     <p class='text-center mt-3'>
-        Don't have an account?
-        <a href="/Registration/Register">Register here</a>.
+        Don't have an account yet?
+        <a href="/Registration/Register">Register</a>.
     </p>
 </div>
 

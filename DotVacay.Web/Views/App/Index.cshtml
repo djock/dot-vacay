@@ -1,15 +1,83 @@
-﻿@{
-    ViewData["Title"] = "App";
+﻿@model List<DotVacay.Core.Entities.Trip>
+
+@{
+    ViewBag.Title = "App";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center mt-5">
-    <h1>This be App</h1>
-</div>
+<div class="container mt-5">
+    <!-- Recently Viewed and Upcoming Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Recently viewed and upcoming</h3>
+            <hr />
 
-<style>
-    h1 {
-        font-size: 2.5rem;
-        font-weight: bold;
-    }
-</style>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var trip in Model)
+                {
+                    <!-- Use a link with no default styling -->
+                    <a href="@Url.Action("Index", "Trip", new { tripId = trip.Id })" class="text-decoration-none">
+                        <div class="card mb-3" style="max-width: 540px; cursor: pointer;">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    <!-- Replace with dynamic image if available -->
+                                    <img src="/path-to-your-image.jpg" class="img-fluid rounded-start" alt="@trip.Title">
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">@trip.Title</h5>
+                                        <p class="card-text">
+                                            <!-- Handle PointsOfInterest count -->
+                                            @if (trip.PointsOfInterest != null && trip.PointsOfInterest.Any())
+                                            {
+                                                <small>@trip.PointsOfInterest.Count places</small>
+                                            }
+                                            else
+                                            {
+                                                <small>No places available</small>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <p>No trips found.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h4>Need a place to stay?</h4>
+            <form method="get" action="/Search/Results">
+                <div class="row justify-content-center g-2">
+                    <div class="col-md-3 mb-2">
+                        <input type="text" name="destination" placeholder="Search destinations"
+                               class="form-control" required />
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="date" name="checkin" class="form-control" required />
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="date" name="checkout" class="form-control" required />
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <input type="number" name="travelers" min="1" max="10"
+                               placeholder="# Travelers"
+                               class="form-control" required />
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <button type="submit" class="btn btn-dark w-100">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

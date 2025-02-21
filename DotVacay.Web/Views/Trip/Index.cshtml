@@ -1,0 +1,21 @@
+﻿@model DotVacay.Core.Entities.Trip
+
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <h1>@Model.Title</h1>
+
+    @* <p><strong>Dates:</strong> @Model.StartDate – @Model.EndDate</p> *@
+    @if (Model.PointsOfInterest != null && Model.PointsOfInterest.Any())
+    {
+        <small>@Model.PointsOfInterest.Count places</small>
+    }
+    else
+    {
+        <small>No places available</small>
+    }
+
+</div>
