@@ -1,7 +1,8 @@
 ﻿using DotVacay.Core.Common;
 using DotVacay.Core.Entities;
 using DotVacay.Core.Interfaces;
-using DotVacay.Core.Models;
+using DotVacay.Core.Models.Requests;
+using DotVacay.Core.Models.Results;
 using DotVacay.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

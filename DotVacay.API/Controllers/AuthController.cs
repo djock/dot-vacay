@@ -1,6 +1,7 @@
-﻿using DotVacay.Application.DTOs;
+﻿using DotVacay.Application.DTOs.Post;
 using DotVacay.Core.Interfaces;
-using DotVacay.Core.Models;
+using DotVacay.Core.Models.Requests;
+using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     private readonly IAuthService _authService = authService;
 
     [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthResult), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RegisterAsync([FromBody] RegisterDto dto)
     {
         var request = new RegisterRequest(
@@ -24,22 +27,28 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         var result = await _authService.RegisterAsync(request);
 
-        return result.Success
-            ? Ok(new { token = result.Data })
-            : BadRequest(new { errors = result.Errors });
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return BadRequest(result);
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthResult), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
     {
         var request = new LoginRequest(dto.Email, dto.Password);
         var result = await _authService.LoginAsync(request);
 
-        Console.WriteLine("dto " + dto.ToString());
+        if (result.Success)
+        {
+            return Ok(result);
+        }
 
-        return result.Success
-            ? Ok(new { token = result.Data })
-            : Unauthorized(new { errors = result.Errors });
+        return BadRequest(result);
     }
 
     [HttpPost("logout")]
@@ -47,6 +56,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-        return Ok(new { message = "Logged out successfully" });
+        return Ok();
     }
 }

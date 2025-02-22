@@ -1,4 +1,5 @@
 ﻿using DotVacay.Core.Entities;
+using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -25,7 +26,7 @@ namespace DotVacay.Web.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var trips = JsonConvert.DeserializeObject<List<Trip>>(responseContent);
+                var trips = JsonConvert.DeserializeObject<List<TripResult>>(responseContent);
 
                 // Pass the trips to the view
                 return View(trips);

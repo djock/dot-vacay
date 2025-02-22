@@ -1,4 +1,4 @@
-﻿namespace DotVacay.Core.Models
+﻿namespace DotVacay.Core.Models.Requests
 {
     public record RegisterRequest(
        string Email,
@@ -6,5 +6,4 @@
        string FirstName,
        string LastName
    );
-    public record LoginRequest(string Email, string Password);
 }

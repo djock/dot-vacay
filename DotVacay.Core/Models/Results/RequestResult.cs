@@ -1,4 +1,4 @@
-﻿namespace DotVacay.Core.Models
+﻿namespace DotVacay.Core.Models.Results
 {
     public record RequestResult(
         bool Success,

@@ -1,4 +1,4 @@
-﻿namespace DotVacay.Application.DTOs
+﻿namespace DotVacay.Application.DTOs.Post
 {
     public record RegisterDto
     (

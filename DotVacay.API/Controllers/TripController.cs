@@ -1,11 +1,11 @@
-﻿using DotVacay.Application.DTOs;
-using DotVacay.Application.Services;
-using DotVacay.Core.Entities;
+﻿using DotVacay.API.Models;
+using DotVacay.Application.DTOs.Patch;
+using DotVacay.Application.DTOs.Post;
 using DotVacay.Core.Interfaces;
-using DotVacay.Core.Models;
+using DotVacay.Core.Models.Requests;
+using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
@@ -24,19 +24,36 @@ namespace DotVacay.API.Controllers
         #region POST
 
         [HttpPost("create")]
+        [ProducesResponseType(typeof(TripIdResult), StatusCodes.Status200OK)] // Success
+        [ProducesResponseType(typeof(TripIdResult), StatusCodes.Status400BadRequest)] // Bad Request
         public async Task<IActionResult> CreateAsync([FromBody] CreateTripDto dto)
         {
             var request = new CreateTripRequest(dto.Title, dto.Description ?? "", UserEmail);
             var result = await _service.CreateAsync(request);
-            return HandleResult(result);
+
+            if(result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+
         }
 
         [HttpPost("join")]
+        [ProducesResponseType(typeof(TripIdResult), StatusCodes.Status200OK)] 
+        [ProducesResponseType(typeof(TripIdResult), StatusCodes.Status400BadRequest)] 
         public async Task<IActionResult> JoinTrip([FromBody] JoinTripDto dto)
         {
             var request = new JoinTripRequest(dto.TripId, dto.Role, UserEmail);
             var result = await _service.JoinAsync(request);
-            return HandleResult(result);
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
 
@@ -45,10 +62,18 @@ namespace DotVacay.API.Controllers
         #region GET
 
         [HttpGet("getAll")]
+        [ProducesResponseType(typeof(AllTripsResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AllTripsResult), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllTrips()
         {
             var result = await _service.GetAllAsync(UserId);
-            return HandleResult(result);
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
 
