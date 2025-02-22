@@ -8,14 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotVacay.Application.Services
 {
-    public class PointOfInterestService(ApplicationDbContext context, ITripService tripService) : IPointOfInterestService
+    public class PointOfInterestService(ApplicationDbContext context, ITripAccessHelperService tripAccessHelperService) : IPointOfInterestService
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly ITripService _tripService = tripService;
 
         public async Task<RequestResult> CreateAsync(CreatePointOfInterestRequest request)
         {
-            var trip = await _tripService.GetTripWithAccessCheck(new(request.TripId, request.UserId));
+            var trip = await tripAccessHelperService.GetTripWithAccessCheck(new(request.TripId, request.UserId));
 
             var poi = new PointOfInterest
             {
@@ -28,15 +26,15 @@ namespace DotVacay.Application.Services
                 TripId = request.TripId
             };
 
-            _context.PointsOfInterest.Add(poi);
-            await _context.SaveChangesAsync();
+            context.PointsOfInterest.Add(poi);
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> DeleteAsync(UserResourceIdRequest request)
         {
-            var pointOfInterest = await _context.PointsOfInterest
+            var pointOfInterest = await context.PointsOfInterest
                 .FirstOrDefaultAsync(poi => poi.Id == request.ResourceId);
 
             if (pointOfInterest == null)
@@ -44,17 +42,17 @@ namespace DotVacay.Application.Services
                 return DomainErrors.General.NotFound;
             }
 
-            _context.PointsOfInterest.Remove(pointOfInterest);
-            await _context.SaveChangesAsync();
+            context.PointsOfInterest.Remove(pointOfInterest);
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> GetAllAsync(UserResourceIdRequest request)
         {
-            var trip = await _tripService.GetTripWithAccessCheck(request);
+            var trip = await tripAccessHelperService.GetTripWithAccessCheck(request);
 
-            var pois = await _context.PointsOfInterest
+            var pois = await context.PointsOfInterest
                 .Where(p => p.TripId == request.ResourceId)
                 .ToListAsync();
 
@@ -63,9 +61,9 @@ namespace DotVacay.Application.Services
 
         public async Task<RequestResult> GetByIdAsync(UserResourceIdRequest request)
         {
-            var trip = await _tripService.GetTripWithAccessCheck(request);
+            var trip = await tripAccessHelperService.GetTripWithAccessCheck(request);
 
-            var pointOfInterest = await _context.PointsOfInterest
+            var pointOfInterest = await context.PointsOfInterest
                 .FirstOrDefaultAsync(p => p.TripId == request.ResourceId);
 
             if (pointOfInterest == null)
@@ -78,7 +76,7 @@ namespace DotVacay.Application.Services
 
         public async Task<RequestResult> UpdateCoordinatesAsync(UpdateCoordinatesRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
                 return DomainErrors.General.NotFound;
@@ -91,14 +89,14 @@ namespace DotVacay.Application.Services
 
             poi.Longitude = request.Longitude;
             poi.Latitude = request.Latitude;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateDatesAsync(UpdateDatesRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
                 return DomainErrors.General.NotFound;
@@ -111,14 +109,14 @@ namespace DotVacay.Application.Services
 
             poi.StartDate = request.StartDate;
             poi.EndDate = request.EndDate;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateDescriptionAsync(UpdateTextRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
                 return DomainErrors.General.NotFound;
@@ -130,14 +128,14 @@ namespace DotVacay.Application.Services
             }
 
             poi.Description = request.NewText;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateTitleAsync(UpdateTextRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
                 return DomainErrors.General.NotFound;
@@ -149,14 +147,14 @@ namespace DotVacay.Application.Services
             }
 
             poi.Title = request.NewText;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateTripDayIndexAsync(UpdateTripDayIndexRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
                 return DomainErrors.General.NotFound;
@@ -168,14 +166,14 @@ namespace DotVacay.Application.Services
             }
 
             poi.TripDayIndex = request.NewTripDayIndex;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateTypeAsync(UpdateTypeRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
                 return DomainErrors.General.NotFound;
 
@@ -183,14 +181,14 @@ namespace DotVacay.Application.Services
                 return DomainErrors.General.Forbidden;
 
             poi.Type = request.NewType;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         public async Task<RequestResult> UpdateUrlAsync(UpdateTextRequest request)
         {
-            var poi = await _context.PointsOfInterest.FindAsync(request.Id);
+            var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
                 return DomainErrors.General.NotFound;
 
@@ -198,14 +196,14 @@ namespace DotVacay.Application.Services
                 return DomainErrors.General.Forbidden;
 
             poi.Url = request.NewText;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
 
         private async Task<bool> HasAccessToTrip(int tripId, string userId)
         {
-            return await _context.Trips
+            return await context.Trips
                 .AnyAsync(t => t.Id == tripId &&
                     t.UserTrips.Any(ut => ut.UserId == userId));
         }

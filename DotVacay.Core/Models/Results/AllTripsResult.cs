@@ -2,6 +2,6 @@
 {
     public record AllTripsResult (
      bool Success,
-     List<TripResult> Token,
+     List<TripResult> Trips,
      IEnumerable<string>? Errors = null);
 }

@@ -48,6 +48,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPointOfInterestService, PointOfInterestService>();
 builder.Services.AddScoped<ITripService, TripService>();
+builder.Services.AddScoped<ITripAccessHelperService, TripAccessHelperService>();
 
 builder.Services.AddOpenApi();
 

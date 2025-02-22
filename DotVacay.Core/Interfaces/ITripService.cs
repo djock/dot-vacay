@@ -9,11 +9,10 @@ namespace DotVacay.Core.Interfaces
         Task<RequestResult> DeleteAsync(UserResourceIdRequest userResourceIdRequest);
         Task<TripIdResult> JoinAsync(JoinTripRequest request);
         Task<AllTripsResult> GetAllAsync(string userId);
-        Task<RequestResult> GetByIdAsync(UserResourceIdRequest userResourceIdRequest);
+        Task<TripResult> GetByIdAsync(UserResourceIdRequest userResourceIdRequest);
         Task<RequestResult> UpdateTitleAsync(UpdateTextRequest request);
         Task<RequestResult> UpdateDescriptionAsync(UpdateTextRequest request);
         Task<RequestResult> UpdateDatesAsync(UpdateDatesRequest request);
-        Task<TripRequestResult> GetTripWithAccessCheck(UserResourceIdRequest userResourceIdRequest);
     }
 }
 

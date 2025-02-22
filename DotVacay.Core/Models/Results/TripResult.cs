@@ -1,4 +1,5 @@
-﻿using DotVacay.Core.Enums;
+﻿using DotVacay.Core.Entities;
+using DotVacay.Core.Enums;
 
 namespace DotVacay.Core.Models.Results
 {
@@ -8,6 +9,7 @@ namespace DotVacay.Core.Models.Results
         string Title, 
         DateTimeOffset? StartDate, 
         DateTimeOffset? EndDate,
-        UserTripRole Role
+        UserTripRole Role,
+        ICollection<PointOfInterest> PointsOfInterest
     );
 }

@@ -1,5 +1,4 @@
-﻿using DotVacay.API.Models;
-using DotVacay.Application.DTOs.Patch;
+﻿using DotVacay.Application.DTOs.Patch;
 using DotVacay.Application.DTOs.Post;
 using DotVacay.Core.Interfaces;
 using DotVacay.Core.Models.Requests;
@@ -62,15 +61,15 @@ namespace DotVacay.API.Controllers
         #region GET
 
         [HttpGet("getAll")]
-        [ProducesResponseType(typeof(AllTripsResult), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(AllTripsResult), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(List<TripResult>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<TripResult>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllTrips()
         {
             var result = await _service.GetAllAsync(UserId);
 
             if (result.Success)
             {
-                return Ok(result);
+                return Ok(result.Trips);
             }
 
             return BadRequest(result);
@@ -78,10 +77,18 @@ namespace DotVacay.API.Controllers
 
 
         [HttpGet("getById/{id}")]
+        [ProducesResponseType(typeof(TripResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TripResult), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTrip(int id)
         {
             var result = await _service.GetByIdAsync(new(id, UserId));
-            return HandleResult(result);
+
+            if (result.Success)
+            {
+                return Ok(result.);
+            }
+
+            return BadRequest(result);
         }
 
         #endregion
@@ -117,6 +124,7 @@ namespace DotVacay.API.Controllers
         #region DELETE
 
         [HttpDelete("delete/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteTrip(int id)
         {
             var result = await _service.DeleteAsync(new(id, UserId));
