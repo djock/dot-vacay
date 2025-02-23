@@ -21,7 +21,8 @@ namespace DotVacay.Application.Services
             var trip = new Trip
             {
                 Title = request.Title,
-                Description = request.Description
+                StartDate = request.StartDate,
+                EndDate = request.EndDate
             };
 
             var userTrip = new UserTrip
@@ -74,6 +75,7 @@ namespace DotVacay.Application.Services
                     item.Trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
                 }
 
+                item.Trip.UserTrips = [];
 
                 trips.Add(item.Trip);
             }
@@ -101,6 +103,8 @@ namespace DotVacay.Application.Services
             {
                 trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
             }
+
+            trip.UserTrips = [];
 
             return new TripResult(true, trip);
         }

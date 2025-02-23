@@ -1,5 +1,6 @@
 ﻿using DotVacay.Core.Entities;
 using DotVacay.Core.Models.Results;
+using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -41,6 +42,54 @@ namespace DotVacay.Web.Controllers
 
             TempData["FailMessage"] = "Request failed.";
             return View(new List<Trip>());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Index(CreateTripModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            var token = GetAuthToken();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["FailMessage"] = "Please log in to access this page.";
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var client = clientFactory.CreateClient("ApiClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.PostAsJsonAsync("api/Trip/create", new
+            {
+                model.Title,
+                model.StartDate,
+                model.EndDate,
+            });
+
+            Console.WriteLine("response " + response.ToString);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<TripIdResult>(responseContent);
+
+                if (result == null) return View();
+
+                if (result.Success)
+                {
+                    return RedirectToAction("Index", "Trip", new { tripId = result.TripId });
+                }
+
+                TempData["FailMessage"] = result.Errors.FirstOrDefault();
+                return View();
+            }
+
+            TempData["FailMessage"] = "Something went wrong!";
+            return View();
         }
 
         private string GetAuthToken()

@@ -6,6 +6,10 @@
 }
 
 <div class="container mt-5">
+    @if (TempData["FailMessage"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
+    }
     <!-- Recently Viewed and Upcoming Section -->
     <div class="row mt-4">
         <div class="col-12">
@@ -52,32 +56,5 @@
         </div>
     </div>
 
-    <!-- Search Section -->
-    <div class="row mt-5">
-        <div class="col-12 text-center">
-            <h4>Need a place to stay?</h4>
-            <form method="get" action="/Search/Results">
-                <div class="row justify-content-center g-2">
-                    <div class="col-md-3 mb-2">
-                        <input type="text" name="destination" placeholder="Search destinations"
-                               class="form-control" required />
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <input type="date" name="checkin" class="form-control" required />
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <input type="date" name="checkout" class="form-control" required />
-                    </div>
-                    <div class="col-md-1 mb-2">
-                        <input type="number" name="travelers" min="1" max="10"
-                               placeholder="# Travelers"
-                               class="form-control" required />
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <button type="submit" class="btn btn-dark w-100">Search</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    <partial name="_CreateTripForm" model="new DotVacay.Web.Models.CreateTripModel()" />
 </div>

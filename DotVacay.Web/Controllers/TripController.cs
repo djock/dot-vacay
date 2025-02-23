@@ -1,4 +1,5 @@
 ﻿using DotVacay.Core.Models.Results;
+using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -35,11 +36,11 @@ namespace DotVacay.Web.Controllers
                 }
 
                 TempData["FailMessage"] = tripResult.Errors.FirstOrDefault();
-                return View(null);
+                return RedirectToAction("Index", "App");
             }
 
             TempData["FailMessage"] = "Request failed.";
-            return View(null);
+            return RedirectToAction("Index", "App");
         }
 
         private string GetAuthToken()
