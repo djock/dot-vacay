@@ -11,18 +11,18 @@ namespace DotVacay.Application.Services
     {
         private readonly ApplicationDbContext _context = context;
        
-        public async Task<TripRequestResult> GetTripWithAccessCheck(UserResourceIdRequest request)
+        public async Task<TripResult> GetTripWithAccessCheck(UserResourceIdRequest request)
         {
             var trip = await _context.Trips
                 .Include(t => t.UserTrips)
                 .FirstOrDefaultAsync(t => t.Id == request.ResourceId);
 
-            if (trip == null) return new TripRequestResult(false, Errors: DomainErrors.General.NotFound.Errors);
+            if (trip == null) return new TripResult(false, null, Errors: [DomainErrors.General.NotFound]);
 
             if (!trip.UserTrips.Any(ut => ut.UserId == request.UserId))
-                return new TripRequestResult(false, Errors: DomainErrors.Trip.UserNotMember.Errors);
+                return new TripResult(false, null, Errors: [DomainErrors.Trip.UserNotMember]);
 
-            return new TripRequestResult(true, trip);
+            return new TripResult(true, trip);
         }
     }
 }

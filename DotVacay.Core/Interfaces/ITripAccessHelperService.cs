@@ -5,6 +5,6 @@ namespace DotVacay.Core.Interfaces
 {
     public interface ITripAccessHelperService
     {
-        Task<TripRequestResult> GetTripWithAccessCheck(UserResourceIdRequest userResourceIdRequest);
+        Task<TripResult> GetTripWithAccessCheck(UserResourceIdRequest userResourceIdRequest);
     }
 }

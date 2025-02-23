@@ -9,5 +9,6 @@ namespace DotVacay.Core.Entities
         public int TripId { get; set; }
         public required Trip Trip { get; set; }
         public UserTripRole Role { get; set; }
+
     }
 }

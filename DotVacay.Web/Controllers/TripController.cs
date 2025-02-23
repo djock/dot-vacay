@@ -1,4 +1,4 @@
-﻿using DotVacay.Core.Entities;
+﻿using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -25,13 +25,20 @@ namespace DotVacay.Web.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var trip = JsonConvert.DeserializeObject<Trip>(responseContent);
+                var tripResult = JsonConvert.DeserializeObject<TripResult>(responseContent);
 
-                // Pass the specific trip to the view
-                return View(trip);
+                if(tripResult == null) return View(null);
+
+                if (tripResult.Success)
+                {
+                    return View(tripResult.Trip);
+                }
+
+                TempData["FailMessage"] = tripResult.Errors.FirstOrDefault();
+                return View(null);
             }
 
-            TempData["FailMessage"] = "Failed to load trips.";
+            TempData["FailMessage"] = "Request failed.";
             return View(null);
         }
 

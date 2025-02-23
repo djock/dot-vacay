@@ -2,8 +2,8 @@
 
 namespace DotVacay.Core.Models.Results
 {
-    public record TripResult(
+    public record TripsListResult (
      bool Success,
-     Trip? Trip,
+     List<Trip> Trips,
      IEnumerable<string>? Errors = null);
 }

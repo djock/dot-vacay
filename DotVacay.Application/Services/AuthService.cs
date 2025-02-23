@@ -27,7 +27,7 @@ namespace DotVacay.Application.Services
                 return new AuthResult(true, token);
             }
 
-            return DomainErrors.Auth.InvalidCredentials;  
+            return new(false,string.Empty, Errors: [DomainErrors.Auth.InvalidCredentials]);  
         }
 
         public async Task<AuthResult> RegisterAsync(RegisterRequest request)

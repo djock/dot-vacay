@@ -26,13 +26,20 @@ namespace DotVacay.Web.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var trips = JsonConvert.DeserializeObject<List<TripResult>>(responseContent);
+                var result = JsonConvert.DeserializeObject<TripsListResult>(responseContent);
 
-                // Pass the trips to the view
-                return View(trips);
+                if (result == null) return View();
+
+                if(result.Success)
+                {
+                    return View(result.Trips);
+                }
+
+                TempData["FailMessage"] = result.Errors.FirstOrDefault();
+                return View(new List<Trip>());
             }
 
-            TempData["FailMessage"] = "Failed to load trips.";
+            TempData["FailMessage"] = "Request failed.";
             return View(new List<Trip>());
         }
 

@@ -8,7 +8,7 @@ namespace DotVacay.Core.Interfaces
         Task<TripIdResult> CreateAsync(CreateTripRequest request);
         Task<RequestResult> DeleteAsync(UserResourceIdRequest userResourceIdRequest);
         Task<TripIdResult> JoinAsync(JoinTripRequest request);
-        Task<AllTripsResult> GetAllAsync(string userId);
+        Task<TripsListResult> GetAllAsync(string userId);
         Task<TripResult> GetByIdAsync(UserResourceIdRequest userResourceIdRequest);
         Task<RequestResult> UpdateTitleAsync(UpdateTextRequest request);
         Task<RequestResult> UpdateDescriptionAsync(UpdateTextRequest request);

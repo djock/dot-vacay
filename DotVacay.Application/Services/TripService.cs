@@ -16,7 +16,7 @@ namespace DotVacay.Application.Services
         public async Task<TripIdResult> CreateAsync(CreateTripRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.UserEmail);
-            if (user == null) return DomainErrors.Trip.UserNotFound;
+            if (user == null) return new(false, 0, Errors: [DomainErrors.Auth.UserNotFound]);
 
             var trip = new Trip
             {
@@ -47,70 +47,77 @@ namespace DotVacay.Application.Services
             var isOwner = tripResult.Trip.UserTrips
                 .Any(ut => ut.UserId == request.UserId && ut.Role == UserTripRole.Owner);
 
-            if (!isOwner) return DomainErrors.General.CannotModify;
+            if (!isOwner) return new(false, Errors: [DomainErrors.General.CannotModify]);
 
             context.Trips.Remove(tripResult.Trip);
             await context.SaveChangesAsync();
             return new RequestResult(true);
         }
 
-        public async Task<AllTripsResult> GetAllAsync(string userId)
+        public async Task<TripsListResult> GetAllAsync(string userId)
         {
             var user = await context.Users
            .Include(u => u.UserTrips)
                .ThenInclude(ut => ut.Trip)
            .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null) return DomainErrors.Trip.Forbidden;
+            if (user == null) return new(false, [], Errors: [DomainErrors.Auth.UserNotFound]);
 
-            List<TripResult> trips = [];
+            List<Trip> trips = [];
 
             foreach (var item in user.UserTrips)
             {
                 var pois = await pointOfInterestService.GetAllAsync(new UserResourceIdRequest(item.Trip.Id, userId));
 
-                trips.Add(new TripResult(
-                    item.Trip.Id,
-                    item.Trip.Title,
-                    item.Trip.StartDate,
-                    item.Trip.EndDate,
-                    item.Role,
-                    pois.Data != null ? (List<PointOfInterest>)pois.Data : []
-                ));
+                if(pois.Data != null)
+                {
+                    item.Trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
+                }
+
+
+                trips.Add(item.Trip);
             }
 
-            return new AllTripsResult(true, trips);
+            return new TripsListResult(true, trips);
         }
 
-        public async Task<TripRequestResult> GetByIdAsync(UserResourceIdRequest request)
+        public async Task<TripResult> GetByIdAsync(UserResourceIdRequest request)
         {
             var trip = await context.Trips
             .Include(t => t.UserTrips)
             .ThenInclude(ut => ut.User)
             .FirstOrDefaultAsync(t => t.Id == request.ResourceId);
 
-            if (trip == null) return DomainErrors.General.NotFound;
+            if (trip == null) return new(false, null, Errors: [DomainErrors.General.NotFound]);
 
             if (!trip.UserTrips.Any(ut => ut.UserId == request.UserId))
-                return DomainErrors.Trip.UserNotMember;
+                return new(false, null, Errors: [DomainErrors.Trip.UserNotMember]);
 
             var userTrip = trip.UserTrips.First(ut => ut.UserId == request.UserId);
-            return new TripResult(true, new { trip.Id, trip.Title, trip.Description, userTrip.Role, trip.PointsOfInterest });
+
+            var pois = await pointOfInterestService.GetAllAsync(new UserResourceIdRequest(trip.Id, request.UserId));
+
+            if (pois.Data != null)
+            {
+                trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
+            }
+
+            return new TripResult(true, trip);
         }
 
         public async Task<TripIdResult> JoinAsync(JoinTripRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.UserEmail);
-            if (user == null) return DomainErrors.Trip.UserNotFound;
+            if (user == null) return new(false, null, Errors: [DomainErrors.Auth.UserNotFound]);
 
             var trip = await context.Trips
                 .Include(t => t.UserTrips)
                 .FirstOrDefaultAsync(t => t.Id == request.TripId);
 
-            if (trip == null) return DomainErrors.Trip.NotFound;
+            if (trip == null) return new(false, null, Errors: [DomainErrors.General.NotFound]);
 
             if (trip.UserTrips.Any(ut => ut.UserId == user.Id))
-                return (TripIdResult)DomainErrors.Trip.AlreadyMember;
+                return (TripIdResult)new(false, null, Errors: [DomainErrors.Trip.AlreadyMember]);
 
             var userTrip = new UserTrip
             {

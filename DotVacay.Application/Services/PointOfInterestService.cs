@@ -39,7 +39,7 @@ namespace DotVacay.Application.Services
 
             if (pointOfInterest == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             context.PointsOfInterest.Remove(pointOfInterest);
@@ -68,7 +68,7 @@ namespace DotVacay.Application.Services
 
             if (pointOfInterest == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             return new RequestResult(true, pointOfInterest);
@@ -79,7 +79,7 @@ namespace DotVacay.Application.Services
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
@@ -99,12 +99,12 @@ namespace DotVacay.Application.Services
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
             {
-                return new RequestResult(false, Errors: ["Forbidden"]);
+                return new(false, DomainErrors.General.Forbidden);
             }
 
             poi.StartDate = request.StartDate;
@@ -119,12 +119,12 @@ namespace DotVacay.Application.Services
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
             {
-                return DomainErrors.General.Forbidden;
+                return new(false, DomainErrors.General.Forbidden);
             }
 
             poi.Description = request.NewText;
@@ -138,12 +138,12 @@ namespace DotVacay.Application.Services
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
             {
-                return DomainErrors.General.Forbidden;
+                return new(false, DomainErrors.General.Forbidden);
             }
 
             poi.Title = request.NewText;
@@ -157,12 +157,12 @@ namespace DotVacay.Application.Services
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
             {
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
             }
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
             {
-                return DomainErrors.General.Forbidden;
+                return new(false, DomainErrors.General.Forbidden);
             }
 
             poi.TripDayIndex = request.NewTripDayIndex;
@@ -175,10 +175,10 @@ namespace DotVacay.Application.Services
         {
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
-                return DomainErrors.General.Forbidden;
+                return new(false, DomainErrors.General.Forbidden);
 
             poi.Type = request.NewType;
             await context.SaveChangesAsync();
@@ -190,10 +190,10 @@ namespace DotVacay.Application.Services
         {
             var poi = await context.PointsOfInterest.FindAsync(request.Id);
             if (poi == null)
-                return DomainErrors.General.NotFound;
+                return new(false, DomainErrors.General.NotFound);
 
             if (!await HasAccessToTrip(poi.TripId, request.UserId))
-                return DomainErrors.General.Forbidden;
+                return new(false, DomainErrors.General.Forbidden);
 
             poi.Url = request.NewText;
             await context.SaveChangesAsync();

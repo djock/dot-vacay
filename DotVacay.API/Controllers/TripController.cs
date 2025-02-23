@@ -1,5 +1,6 @@
 ﻿using DotVacay.Application.DTOs.Patch;
 using DotVacay.Application.DTOs.Post;
+using DotVacay.Core.Entities;
 using DotVacay.Core.Interfaces;
 using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
@@ -61,15 +62,15 @@ namespace DotVacay.API.Controllers
         #region GET
 
         [HttpGet("getAll")]
-        [ProducesResponseType(typeof(List<TripResult>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(List<TripResult>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(List<Trip>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<Trip>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllTrips()
         {
             var result = await _service.GetAllAsync(UserId);
 
             if (result.Success)
             {
-                return Ok(result.Trips);
+                return Ok(result);
             }
 
             return BadRequest(result);
@@ -85,7 +86,7 @@ namespace DotVacay.API.Controllers
 
             if (result.Success)
             {
-                return Ok(result.);
+                return Ok(result);
             }
 
             return BadRequest(result);
