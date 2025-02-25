@@ -1,5 +1,5 @@
 ﻿using DotVacay.Application.DTOs.Post;
-using DotVacay.Core.Interfaces;
+using DotVacay.Core.Interfaces.Services;
 using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Authentication;

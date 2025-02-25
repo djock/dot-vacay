@@ -1,7 +1,7 @@
 ﻿using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
 
-namespace DotVacay.Core.Interfaces
+namespace DotVacay.Core.Interfaces.Services
 {
     public interface IPointOfInterestService
     {

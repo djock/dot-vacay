@@ -1,7 +1,9 @@
 using DotVacay.Application.Services;
 using DotVacay.Core.Entities;
-using DotVacay.Core.Interfaces;
+using DotVacay.Core.Interfaces.Repositories;
+using DotVacay.Core.Interfaces.Services;
 using DotVacay.Infrastructure.Data;
+using DotVacay.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +51,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPointOfInterestService, PointOfInterestService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<ITripAccessHelperService, TripAccessHelperService>();
+builder.Services.AddScoped<IPointOfInterestRepository, PointOfInterestRepository>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 
 builder.Services.AddOpenApi();
 

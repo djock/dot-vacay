@@ -1,7 +1,7 @@
 ﻿using DotVacay.Application.DTOs.Patch;
 using DotVacay.Application.DTOs.Post;
 using DotVacay.Core.Enums;
-using DotVacay.Core.Interfaces;
+using DotVacay.Core.Interfaces.Services;
 using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Authorization;

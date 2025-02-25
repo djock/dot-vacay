@@ -1,6 +1,6 @@
 ﻿using DotVacay.Core.Common;
 using DotVacay.Core.Entities;
-using DotVacay.Core.Interfaces;
+using DotVacay.Core.Interfaces.Services;
 using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
 using Microsoft.AspNetCore.Identity;

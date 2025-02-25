@@ -1,16 +1,15 @@
 ﻿using DotVacay.Core.Common;
 using DotVacay.Core.Entities;
 using DotVacay.Core.Enums;
-using DotVacay.Core.Interfaces;
+using DotVacay.Core.Interfaces.Repositories;
+using DotVacay.Core.Interfaces.Services;
 using DotVacay.Core.Models.Requests;
 using DotVacay.Core.Models.Results;
-using DotVacay.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace DotVacay.Application.Services
 {
-    public class TripService(ApplicationDbContext context,
+    public class TripService(ITripRepository tripRepository, IUserRepository userRepository,
     UserManager<ApplicationUser> userManager, IPointOfInterestService pointOfInterestService, ITripAccessHelperService tripAccessHelperService) : ITripService
     {
         public async Task<TripIdResult> CreateAsync(CreateTripRequest request)
@@ -34,8 +33,8 @@ namespace DotVacay.Application.Services
             };
 
             trip.UserTrips.Add(userTrip);
-            context.Trips.Add(trip);
-            await context.SaveChangesAsync();
+
+            await tripRepository.AddAsync(trip);
 
             return new TripIdResult(true, trip.Id);
         }
@@ -50,17 +49,14 @@ namespace DotVacay.Application.Services
 
             if (!isOwner) return new(false, Errors: [DomainErrors.General.CannotModify]);
 
-            context.Trips.Remove(tripResult.Trip);
-            await context.SaveChangesAsync();
+            await tripRepository.AddAsync(tripResult.Trip);
+
             return new RequestResult(true);
         }
 
         public async Task<TripsListResult> GetAllAsync(string userId)
         {
-            var user = await context.Users
-           .Include(u => u.UserTrips)
-               .ThenInclude(ut => ut.Trip)
-           .FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await userRepository.GetByIdAsync(userId);
 
             if (user == null) return new(false, [], Errors: [DomainErrors.Auth.UserNotFound]);
 
@@ -85,10 +81,7 @@ namespace DotVacay.Application.Services
 
         public async Task<TripResult> GetByIdAsync(UserResourceIdRequest request)
         {
-            var trip = await context.Trips
-            .Include(t => t.UserTrips)
-            .ThenInclude(ut => ut.User)
-            .FirstOrDefaultAsync(t => t.Id == request.ResourceId);
+            var trip = await tripRepository.GetByIdAsync(request.ResourceId);
 
             if (trip == null) return new(false, null, Errors: [DomainErrors.General.NotFound]);
 
@@ -114,9 +107,7 @@ namespace DotVacay.Application.Services
             var user = await userManager.FindByEmailAsync(request.UserEmail);
             if (user == null) return new(false, null, Errors: [DomainErrors.Auth.UserNotFound]);
 
-            var trip = await context.Trips
-                .Include(t => t.UserTrips)
-                .FirstOrDefaultAsync(t => t.Id == request.TripId);
+            var trip = await tripRepository.GetByIdAsync(request.TripId);
 
             if (trip == null) return new(false, null, Errors: [DomainErrors.General.NotFound]);
 
@@ -131,8 +122,7 @@ namespace DotVacay.Application.Services
                 Role = request.Role
             };
 
-            trip.UserTrips.Add(userTrip);
-            await context.SaveChangesAsync();
+            await tripRepository.AddAsync(trip);
 
             return new TripIdResult(true, trip.Id);
         }
@@ -145,7 +135,8 @@ namespace DotVacay.Application.Services
             tripResult.Trip.StartDate = request.StartDate;
             tripResult.Trip.EndDate = request.EndDate;
 
-            await context.SaveChangesAsync();
+            await tripRepository.UpdateDatesAsync(request);
+
             return new RequestResult(true, new { tripResult.Trip.Id, tripResult.Trip.StartDate, tripResult.Trip.EndDate });
         }
 
@@ -155,7 +146,7 @@ namespace DotVacay.Application.Services
             if (!tripResult.Success || tripResult.Trip == null) return new RequestResult(false, Errors: tripResult.Errors);
 
             tripResult.Trip.Description = request.NewText;
-            await context.SaveChangesAsync();
+            tripRepository.SaveChanges();
             return new RequestResult(true, new { tripResult.Trip.Id, tripResult.Trip.Description });
         }
 
@@ -165,7 +156,7 @@ namespace DotVacay.Application.Services
             if (!tripResult.Success || tripResult.Trip == null) return new RequestResult(false, Errors: tripResult.Errors);
 
             tripResult.Trip.Title = request.NewText;
-            await context.SaveChangesAsync();
+            tripRepository.SaveChanges();
             return new RequestResult(true, new { tripResult.Trip.Id, tripResult.Trip.Title });
         }
     }
