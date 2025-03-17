@@ -30,9 +30,9 @@ namespace DotVacay.Web.Controllers
 
                 if(tripResult == null) return View(null);
 
-                if (tripResult.Success)
+                if (tripResult.Success && tripResult.Trip != null)
                 {
-                    return View(tripResult.Trip);
+                    return View(TripViewModel.FromTrip(tripResult.Trip));
                 }
 
                 TempData["FailMessage"] = tripResult.Errors.FirstOrDefault();
@@ -41,6 +41,39 @@ namespace DotVacay.Web.Controllers
 
             TempData["FailMessage"] = "Request failed.";
             return RedirectToAction("Index", "App");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPointOfInterest(PointOfInterestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Index), new { tripId = model.TripId });
+            }
+
+            var token = GetAuthToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["FailMessage"] = "Please log in to access this page.";
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var client = clientFactory.CreateClient("ApiClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.PostAsJsonAsync("api/PointOfInterest/create", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Place added successfully!";
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<dynamic>();
+                TempData["FailMessage"] = error?.errors?.FirstOrDefault() ?? "Failed to add place.";
+            }
+
+            return RedirectToAction(nameof(Index), new { tripId = model.TripId });
         }
 
         private string GetAuthToken()

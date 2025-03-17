@@ -151,14 +151,31 @@ namespace DotVacay.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteTrip(int id)
         {
-            var result = await _service.DeleteAsync(new(id, UserId));
+            var request = new UserResourceIdRequest(id, UserId);
+            var result = await _service.DeleteAsync(request);
 
             if (result.Success)
             {
-                return Ok();
+                return Ok(result);
             }
 
             return BadRequest(HandleError(result.Errors!));
+        }
+
+        [HttpPost("leave/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> LeaveTrip(int id)
+        {
+            var request = new UserResourceIdRequest(id, UserId);
+            var result = await _service.LeaveAsync(request);
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
         #endregion

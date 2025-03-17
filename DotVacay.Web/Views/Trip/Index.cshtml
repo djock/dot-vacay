@@ -1,4 +1,5 @@
-﻿@model DotVacay.Core.Entities.Trip
+﻿@using DotVacay.Core.Enums
+@model DotVacay.Web.Models.TripViewModel
 
 @{
     ViewBag.Title = Model.Title;
@@ -8,14 +9,117 @@
 <div class="container mt-5">
     <h1>@Model.Title</h1>
 
-    @* <p><strong>Dates:</strong> @Model.StartDate – @Model.EndDate</p> *@
-    @if (Model.PointsOfInterest != null && Model.PointsOfInterest.Any())
+    @if (Model.StartDate.HasValue || Model.EndDate.HasValue)
     {
-        <small>@Model.PointsOfInterest.Count places</small>
-    }
-    else
-    {
-        <small>No places available</small>
+        <p class="text-muted">
+            @if (Model.StartDate.HasValue)
+            {
+                <span>From: @Model.StartDate.Value.ToString("MMM dd, yyyy")</span>
+            }
+            @if (Model.EndDate.HasValue)
+            {
+                <span>To: @Model.EndDate.Value.ToString("MMM dd, yyyy")</span>
+            }
+        </p>
     }
 
+    @if (!string.IsNullOrEmpty(Model.Description))
+    {
+        <p class="lead">@Model.Description</p>
+    }
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Add New Place</h5>
+                    <form asp-action="AddPointOfInterest" method="post">
+                        <input type="hidden" asp-for="Id" name="TripId" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Title" class="form-label">Title</label>
+                                <input asp-for="Title" class="form-control" />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label">Start Date</label>
+                                <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label">End Date</label>
+                                <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Add Place</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <h2>Places to Visit</h2>
+            @if (Model.PointsOfInterest.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach (var poi in Model.PointsOfInterest)
+                    {
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">@poi.Title</h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">Type: @poi.Type</small>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(poi.Description))
+                                    {
+                                        <p class="card-text">@poi.Description</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(poi.Url))
+                                    {
+                                        <a href="@poi.Url" class="btn btn-primary btn-sm" target="_blank">Visit Website</a>
+                                    }
+                                    @if (poi.StartDate.HasValue || poi.EndDate.HasValue)
+                                    {
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                @if (poi.StartDate.HasValue)
+                                                {
+                                                    <span>From: @poi.StartDate.Value.ToString("MMM dd, yyyy")</span>
+                                                }
+                                                @if (poi.EndDate.HasValue)
+                                                {
+                                                    <span>To: @poi.EndDate.Value.ToString("MMM dd, yyyy")</span>
+                                                }
+                                            </small>
+                                        </p>
+                                    }
+                                    @if (poi.TripDayIndex.HasValue)
+                                    {
+                                        <p class="card-text">
+                                            <small class="text-muted">Day @poi.TripDayIndex.Value</small>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No places have been added to this trip yet.
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

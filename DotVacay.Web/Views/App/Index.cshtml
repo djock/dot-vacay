@@ -1,4 +1,4 @@
-﻿@model List<DotVacay.Core.Entities.Trip>
+﻿@model DotVacay.Web.Models.AppIndexViewModel
 
 @{
     ViewBag.Title = "App";
@@ -10,51 +10,124 @@
     {
         <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
     }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
+    }
+
     <!-- Recently Viewed and Upcoming Section -->
     <div class="row mt-4">
         <div class="col-12">
             <h3>Recently viewed and upcoming</h3>
             <hr />
 
-            @if (Model != null && Model.Any())
+            @if (Model.Trips.Any())
             {
-                foreach (var trip in Model)
+                foreach (var trip in Model.Trips)
                 {
-                    <!-- Use a link with no default styling -->
-                    <a href="@Url.Action("Index", "Trip", new { tripId = trip.Id })" class="text-decoration-none">
-                        <div class="card mb-3" style="max-width: 540px; cursor: pointer;">
-                            <div class="row g-0">
-                                <div class="col-md-4">
-                                    <!-- Replace with dynamic image if available -->
-                                    <img src="/path-to-your-image.jpg" class="img-fluid rounded-start" alt="@trip.Title">
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="card-body">
-                                        <h5 class="card-title">@trip.Title</h5>
+                    <div class="card mb-3" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="https://picsum.photos/seed/@trip.Id/400/300" class="img-fluid rounded-start" alt="@trip.Title" style="object-fit: cover; height: 100%;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="card-title mb-0">@trip.Title</h5>
+                                        @if (trip.IsOwner)
+                                        {
+                                            <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this trip?');">
+                                                <input type="hidden" name="tripId" value="@trip.Id" />
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Leave" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to leave this trip?');">
+                                                <input type="hidden" name="tripId" value="@trip.Id" />
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="bi bi-box-arrow-right"></i> Leave
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                    <a href="@Url.Action("Index", "Trip", new { tripId = trip.Id })" class="text-decoration-none">
                                         <p class="card-text">
-                                            <!-- Handle PointsOfInterest count -->
-                                            @if (trip.PointsOfInterest != null && trip.PointsOfInterest.Any())
+                                            @if (trip.PointsOfInterestCount > 0)
                                             {
-                                                <small>@trip.PointsOfInterest.Count places</small>
+                                                <small>@trip.PointsOfInterestCount places</small>
                                             }
                                             else
                                             {
                                                 <small>No places available</small>
                                             }
                                         </p>
-                                    </div>
+                                        @if (!string.IsNullOrEmpty(trip.Description))
+                                        {
+                                            <p class="card-text"><small class="text-muted">@trip.Description</small></p>
+                                        }
+                                        @if (trip.StartDate.HasValue || trip.EndDate.HasValue)
+                                        {
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    @if (trip.StartDate.HasValue)
+                                                    {
+                                                        <span>From: @trip.StartDate.Value.ToString("MMM dd, yyyy")</span>
+                                                    }
+                                                    @if (trip.EndDate.HasValue)
+                                                    {
+                                                        <span>To: @trip.EndDate.Value.ToString("MMM dd, yyyy")</span>
+                                                    }
+                                                </small>
+                                            </p>
+                                        }
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 }
             }
             else
             {
-                <p>No trips found.</p>
+                <div class="alert alert-info">
+                    No trips available. Create your first trip to get started!
+                </div>
             }
         </div>
     </div>
 
-    <partial name="_CreateTripForm" model="new DotVacay.Web.Models.CreateTripModel()" />
+    <!-- Create Trip Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Create New Trip</h3>
+            <hr />
+            <form asp-action="Index" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="CreateTrip.Title" class="form-label">Trip Title</label>
+                        <input asp-for="CreateTrip.Title" class="form-control" />
+                        <span asp-validation-for="CreateTrip.Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CreateTrip.StartDate" class="form-label">Start Date</label>
+                        <input asp-for="CreateTrip.StartDate" class="form-control" type="datetime-local" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CreateTrip.EndDate" class="form-label">End Date</label>
+                        <input asp-for="CreateTrip.EndDate" class="form-control" type="datetime-local" />
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Create Trip</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

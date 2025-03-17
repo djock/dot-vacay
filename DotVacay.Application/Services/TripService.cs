@@ -47,9 +47,30 @@ namespace DotVacay.Application.Services
             var isOwner = tripResult.Trip.UserTrips
                 .Any(ut => ut.UserId == request.UserId && ut.Role == UserTripRole.Owner);
 
-            if (!isOwner) return new(false, Errors: [DomainErrors.General.CannotModify]);
+            if (!isOwner) return new(false, Errors: [DomainErrors.Trip.NotOwner]);
 
-            await tripRepository.AddAsync(tripResult.Trip);
+            await tripRepository.RemoveAsync(tripResult.Trip);
+            tripRepository.SaveChanges();
+
+            return new RequestResult(true);
+        }
+
+        public async Task<RequestResult> LeaveAsync(UserResourceIdRequest request)
+        {
+            var tripResult = await tripAccessHelperService.GetTripWithAccessCheck(request);
+            if (!tripResult.Success || tripResult.Trip == null) return new RequestResult(false, Errors: tripResult.Errors);
+
+            var userTrip = tripResult.Trip.UserTrips.FirstOrDefault(ut => ut.UserId == request.UserId);
+            if (userTrip == null) return new(false, Errors: [DomainErrors.Trip.UserNotMember]);
+
+            if (userTrip.Role == UserTripRole.Owner)
+            {
+                // If user is the owner, they can't leave the trip
+                return new(false, Errors: [DomainErrors.Trip.OwnerCannotLeave]);
+            }
+
+            tripResult.Trip.UserTrips.Remove(userTrip);
+            tripRepository.SaveChanges();
 
             return new RequestResult(true);
         }
@@ -64,19 +85,21 @@ namespace DotVacay.Application.Services
 
             foreach (var item in user.UserTrips)
             {
-                var pois = await pointOfInterestService.GetAllAsync(new UserResourceIdRequest(item.Trip.Id, userId));
+                // Get the full trip with UserTrips included
+                var trip = await tripRepository.GetByIdAsync(item.Trip.Id);
+                if (trip == null) continue;
+
+                var pois = await pointOfInterestService.GetAllAsync(new UserResourceIdRequest(trip.Id, userId));
 
                 if(pois.Data != null)
                 {
-                    item.Trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
+                    trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
                 }
 
-                item.Trip.UserTrips = [];
-
-                trips.Add(item.Trip);
+                trips.Add(trip);
             }
 
-            return new TripsListResult(true, trips);
+            return new(true, trips);
         }
 
         public async Task<TripResult> GetByIdAsync(UserResourceIdRequest request)
