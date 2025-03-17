@@ -51,10 +51,20 @@ namespace DotVacay.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(CreateTripViewModel model)
+        public async Task<IActionResult> Index([FromForm] CreateTripViewModel model)
         {
+            Console.WriteLine($"Starting trip creation for title: {model.Title}");
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("Model state is invalid");
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        Console.WriteLine($"Validation error: {error.ErrorMessage}");
+                    }
+                }
                 var viewModel = new AppIndexViewModel { CreateTrip = model };
                 return View(viewModel);
             }
@@ -62,6 +72,7 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token))
             {
+                Console.WriteLine("No auth token found");
                 TempData["FailMessage"] = "Please log in to access this page.";
                 return RedirectToAction("Login", "Auth");
             }
@@ -69,19 +80,41 @@ namespace DotVacay.Web.Controllers
             var client = clientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await client.PostAsJsonAsync("api/Trip/create", model);
+            Console.WriteLine("Sending request to API...");
+            var response = await client.PostAsJsonAsync("api/Trip/create", new
+            {
+                model.Title,
+                model.Description,
+                model.StartDate,
+                model.EndDate
+            });
+            Console.WriteLine($"API Response Status: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = "Trip created successfully!";
-            }
-            else
-            {
-                var errorResponse = await response.Content.ReadFromJsonAsync<RequestResult>();
-                TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to create trip.";
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Success Response Content: {responseContent}");
+
+                var result = JsonConvert.DeserializeObject<TripIdResult>(responseContent);
+                Console.WriteLine($"Parsed Result - Success: {result?.Success}, TripId: {result?.TripId}");
+
+                if (result != null && result.Success)
+                {
+                    Console.WriteLine($"Redirecting to Trip/Index with tripId: {result.TripId}");
+                    TempData["SuccessMessage"] = "Trip created successfully!";
+                    return RedirectToAction("Index", "Trip", new { tripId = result.TripId });
+                }
             }
 
-            return RedirectToAction(nameof(Index));
+            Console.WriteLine("Request failed or result was unsuccessful");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error Response Content: {errorContent}");
+
+            var errorResponse = JsonConvert.DeserializeObject<RequestResult>(errorContent);
+            TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to create trip.";
+            
+            var errorViewModel = new AppIndexViewModel { CreateTrip = model };
+            return View(errorViewModel);
         }
 
         [HttpPost]

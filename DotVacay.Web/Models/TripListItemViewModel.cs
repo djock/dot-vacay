@@ -15,14 +15,6 @@ namespace DotVacay.Web.Models
 
         public static TripListItemViewModel FromTrip(Trip trip, string currentUserId)
         {
-            foreach(var item in trip.UserTrips)
-            {
-                Console.WriteLine(item.TripId + " " + item.Role);
-            }
-
-            Console.WriteLine(trip.Id.ToString() );
-
-
             return new TripListItemViewModel
             {
                 Id = trip.Id,
