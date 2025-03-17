@@ -11,12 +11,12 @@ namespace DotVacay.Infrastructure.Repositories
         public async Task AddAsync(Trip trip)
         {
             context.Trips.Add(trip);
-            await context.SaveChangesAsync();
+            await SaveChangesAsync();
         } 
         public async Task RemoveAsync(Trip trip)
         {
             context.Trips.Remove(trip);
-            await context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task<Trip?> GetByIdAsync(int id)
@@ -28,29 +28,49 @@ namespace DotVacay.Infrastructure.Repositories
             return trip;
         }
 
-        public Task<IEnumerable<Trip>> GetTripsByUserIdAsync(string userId)
+        public async Task<IEnumerable<Trip>> GetTripsByUserIdAsync(string userId)
         {
-            throw new NotImplementedException();
+            return await context.Trips
+                .Include(t => t.UserTrips)
+                .Include(t => t.PointsOfInterest)
+                .Where(t => t.UserTrips.Any(ut => ut.UserId == userId))
+                .ToListAsync();
         }
 
-        public void SaveChanges()
+        public async Task SaveChangesAsync()
         {
-            context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
-        public Task UpdateDatesAsync(UpdateDatesRequest request)
+        public async Task UpdateDatesAsync(UpdateDatesRequest request)
         {
-            throw new NotImplementedException();
+            var trip = await GetByIdAsync(request.Id);
+            if (trip != null)
+            {
+                trip.StartDate = request.StartDate;
+                trip.EndDate = request.EndDate;
+                await SaveChangesAsync();
+            }
         }
 
-        public Task UpdateDescriptionAsync(UpdateTextRequest request)
+        public async Task UpdateDescriptionAsync(UpdateTextRequest request)
         {
-            throw new NotImplementedException();
+            var trip = await GetByIdAsync(request.Id);
+            if (trip != null)
+            {
+                trip.Description = request.NewText;
+                await SaveChangesAsync();
+            }
         }
 
-        public Task UpdateTitleAsync(UpdateTextRequest request)
+        public async Task UpdateTitleAsync(UpdateTextRequest request)
         {
-            throw new NotImplementedException();
+            var trip = await GetByIdAsync(request.Id);
+            if (trip != null)
+            {
+                trip.Title = request.NewText;
+                await SaveChangesAsync();
+            }
         }
     }
 }

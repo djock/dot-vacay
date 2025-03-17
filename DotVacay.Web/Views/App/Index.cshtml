@@ -104,26 +104,7 @@
         <div class="col-12">
             <h3>Create New Trip</h3>
             <hr />
-            <form asp-action="Index" method="post">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="CreateTrip.Title" class="form-label">Trip Title</label>
-                        <input asp-for="CreateTrip.Title" class="form-control" />
-                        <span asp-validation-for="CreateTrip.Title" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="CreateTrip.StartDate" class="form-label">Start Date</label>
-                        <input asp-for="CreateTrip.StartDate" class="form-control" type="datetime-local" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="CreateTrip.EndDate" class="form-label">End Date</label>
-                        <input asp-for="CreateTrip.EndDate" class="form-control" type="datetime-local" />
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Create Trip</button>
-                    </div>
-                </div>
-            </form>
+            @await Html.PartialAsync("_CreateTripForm", Model.CreateTrip)
         </div>
     </div>
 </div>

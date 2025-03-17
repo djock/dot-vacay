@@ -82,7 +82,7 @@ namespace DotVacay.Application.Services
             poi.Longitude = request.Longitude;
             poi.Latitude = request.Latitude;
 
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -102,7 +102,7 @@ namespace DotVacay.Application.Services
 
             poi.StartDate = request.StartDate;
             poi.EndDate = request.EndDate;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -121,7 +121,7 @@ namespace DotVacay.Application.Services
             }
 
             poi.Description = request.NewText;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -140,7 +140,7 @@ namespace DotVacay.Application.Services
             }
 
             poi.Title = request.NewText;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -159,7 +159,7 @@ namespace DotVacay.Application.Services
             }
 
             poi.TripDayIndex = request.NewTripDayIndex;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -174,7 +174,7 @@ namespace DotVacay.Application.Services
                 return new(false, DomainErrors.General.Forbidden);
 
             poi.Type = request.NewType;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }
@@ -189,7 +189,7 @@ namespace DotVacay.Application.Services
                 return new(false, DomainErrors.General.Forbidden);
 
             poi.Url = request.NewText;
-            pointOfInterestRepository.SaveChangesAsync();
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }

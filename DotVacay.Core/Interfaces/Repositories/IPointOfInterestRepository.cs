@@ -10,6 +10,6 @@ namespace DotVacay.Core.Interfaces.Repositories
         Task<IEnumerable<PointOfInterest>?> GetAllAsync(int id);
         Task<IEnumerable<PointOfInterest>> GetByTripIdAsync(int tripId);
         Task Remove(PointOfInterest poi);
-        void SaveChangesAsync();
+        Task SaveChangesAsync();
     }
 }

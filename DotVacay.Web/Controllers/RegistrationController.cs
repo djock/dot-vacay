@@ -79,7 +79,12 @@ namespace DotVacay.Web.Controllers
                 var responseContent = await httpContent.ReadAsStringAsync();
                 var jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(responseContent);
 
-                string token = jsonResponse?.token?.ToString(); 
+                string? token = jsonResponse?.token?.ToString();
+
+                if(token == null)
+                {
+                    throw new Exception("Token not found in response");
+                }
 
                 HttpContext.Response.Cookies.Append("token", token,
                      options: new Microsoft.AspNetCore.Http.CookieOptions

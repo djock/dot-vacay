@@ -10,7 +10,7 @@ namespace DotVacay.Infrastructure.Repositories
         public async Task AddAsync(PointOfInterest poi)
         {
             context.PointsOfInterest.Add(poi);
-            await context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task<IEnumerable<PointOfInterest>?> GetAllAsync(int id)
@@ -38,12 +38,12 @@ namespace DotVacay.Infrastructure.Repositories
         public async Task Remove(PointOfInterest poi)
         {
             context.PointsOfInterest.Remove(poi);
-            await context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
-        public void SaveChangesAsync()
+        public async Task SaveChangesAsync()
         {
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 }

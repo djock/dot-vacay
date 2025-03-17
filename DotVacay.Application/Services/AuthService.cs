@@ -53,16 +53,16 @@ namespace DotVacay.Application.Services
 
         private string GenerateJwtToken(ApplicationUser user)
         {
-            var userEmail = user.Email != null ? user.Email : null;
+            var userEmail = user.Email ?? null;
 
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, userEmail),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.NormalizedUserName)
-        };
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, userEmail ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.NormalizedUserName ?? "")
+            };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

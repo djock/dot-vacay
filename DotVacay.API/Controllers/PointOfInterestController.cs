@@ -32,8 +32,8 @@ namespace DotVacay.API.Controllers
             var request = new CreatePointOfInterestRequest(
                 UserId,
                 dto.Title,
-                dto.Description,
-                dto.Url,
+                dto.Description ?? "",
+                dto.Url ?? "",
                 dto.Latitude,
                 dto.Longitude,
                 dto.Type,

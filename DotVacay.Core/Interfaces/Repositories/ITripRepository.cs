@@ -12,6 +12,6 @@ namespace DotVacay.Core.Interfaces.Repositories
         Task UpdateDatesAsync(UpdateDatesRequest request);
         Task UpdateDescriptionAsync(UpdateTextRequest request);
         Task UpdateTitleAsync(UpdateTextRequest request);
-        void SaveChanges();
+        Task SaveChangesAsync();
     }
 }

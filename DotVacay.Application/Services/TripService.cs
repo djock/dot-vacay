@@ -50,7 +50,6 @@ namespace DotVacay.Application.Services
             if (!isOwner) return new(false, Errors: [DomainErrors.Trip.NotOwner]);
 
             await tripRepository.RemoveAsync(tripResult.Trip);
-            tripRepository.SaveChanges();
 
             return new RequestResult(true);
         }
@@ -70,7 +69,7 @@ namespace DotVacay.Application.Services
             }
 
             tripResult.Trip.UserTrips.Remove(userTrip);
-            tripRepository.SaveChanges();
+            await tripRepository.SaveChangesAsync();
 
             return new RequestResult(true);
         }
@@ -169,7 +168,7 @@ namespace DotVacay.Application.Services
             if (!tripResult.Success || tripResult.Trip == null) return new RequestResult(false, Errors: tripResult.Errors);
 
             tripResult.Trip.Description = request.NewText;
-            tripRepository.SaveChanges();
+            await tripRepository.SaveChangesAsync();
             return new RequestResult(true, new { tripResult.Trip.Id, tripResult.Trip.Description });
         }
 
@@ -179,7 +178,7 @@ namespace DotVacay.Application.Services
             if (!tripResult.Success || tripResult.Trip == null) return new RequestResult(false, Errors: tripResult.Errors);
 
             tripResult.Trip.Title = request.NewText;
-            tripRepository.SaveChanges();
+            await tripRepository.SaveChangesAsync();
             return new RequestResult(true, new { tripResult.Trip.Id, tripResult.Trip.Title });
         }
     }

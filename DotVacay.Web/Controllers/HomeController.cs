@@ -4,7 +4,7 @@ using DotVacay.Web.Models;
 
 namespace DotVacay.Web.Controllers;
 
-public class HomeController(ILogger<HomeController> logger) : Controller
+public class HomeController() : Controller
 {
     public IActionResult Index()
     {

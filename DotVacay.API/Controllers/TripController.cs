@@ -29,7 +29,6 @@ namespace DotVacay.API.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] CreateTripDto dto)
         {
 
-            Console.WriteLine("\nDto " + dto.ToString()+"\n");
             var request = new CreateTripRequest(dto.Title, dto.StartDate, dto.EndDate, UserEmail);
             var result = await _service.CreateAsync(request);
 
