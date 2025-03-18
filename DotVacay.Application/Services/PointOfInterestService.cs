@@ -20,10 +20,42 @@ namespace DotVacay.Application.Services
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 Type = request.Type,
-                TripId = request.TripId
+                TripId = request.TripId,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate
             };
 
             await pointOfInterestRepository.AddAsync(poi);
+
+            return new RequestResult(true, poi);
+        }
+        public async Task<RequestResult> UpdateAsync(UpdatePointOfInterestRequest request)
+        {
+
+            var poi = await pointOfInterestRepository.GetByIdAsync(request.PoiId);
+
+            if (poi == null)
+            {
+                return new(false, DomainErrors.General.NotFound);
+            }
+
+            if (!await tripAccessHelperService.HasAccessToTrip(poi.TripId, request.UserId))
+            {
+                return new RequestResult(false, Errors: ["Forbidden"]);
+            }
+
+
+            poi.Title = request.Title;
+            poi.Description = request.Description;
+            poi.StartDate = request.StartDate;
+            poi.EndDate = request.EndDate;
+            poi.Url = request.Url;
+            poi.Type = request.Type;
+            poi.TripId = request.TripId;
+            poi.Longitude = request.Longitude;
+            poi.Latitude = request.Latitude;
+
+            await pointOfInterestRepository.SaveChangesAsync();
 
             return new RequestResult(true, poi);
         }

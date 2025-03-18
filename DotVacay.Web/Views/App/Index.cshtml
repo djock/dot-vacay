@@ -1,23 +1,21 @@
 ﻿@model DotVacay.Web.Models.AppIndexViewModel
 
 @{
-    ViewBag.Title = "App";
+    ViewBag.Title = "My Trips";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-5">
-    @if (TempData["FailMessage"] != null)
-    {
-        <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
-    }
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
-    }
+<header class="header">
+    <div class="logo">
+    </div>
+    <div class="auth-buttons">
+        <a href="#" class="btn btn-light"><i class="bi bi-person-circle"></i></a>
+    </div>
+</header>
 
-    <!-- Recently Viewed and Upcoming Section -->
+<div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0">Recently viewed and upcoming</h3>
+        <h3 class="mb-0">My Trips</h3>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTripModal">
             <i class="bi bi-plus"></i> Plan new trip
         </button>
@@ -30,22 +28,33 @@
             {
                 <div class="col">
                     <div class="card h-100">
+                        <a href="@Url.Action("Index", "Trip", new { tripId = trip.Id })" class="text-decoration-none text-dark">
                         <div class="position-relative">
                             <img src="https://picsum.photos/seed/@trip.Id/800/400" class="card-img-top" alt="@trip.Title" style="height: 200px; object-fit: cover;">
-                            @if (trip.IsOwner)
+                             @if (trip.IsOwner) 
+                             { 
+                                 <div class="position-absolute top-0 end-0 m-2"> 
+                                     <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this trip?');"> 
+                                         <input type="hidden" name="tripId" value="@trip.Id" />
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash"> </i> 
+                                         </button> 
+                                     </form> 
+                                 </div> 
+                             }
+                            @if (!trip.IsOwner)
                             {
                                 <div class="position-absolute top-0 end-0 m-2">
-                                    <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this trip?');">
+                                    <form asp-action="Leave" method="post" onsubmit="return confirm('Are you sure you want to leave this trip?');">
                                         <input type="hidden" name="tripId" value="@trip.Id" />
-                                        <button type="submit" class="btn btn-danger btn-sm rounded-circle">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="bi bi-box-arrow-right"> </i>
                                         </button>
                                     </form>
                                 </div>
                             }
                         </div>
                         <div class="card-body">
-                            <a href="@Url.Action("Index", "Trip", new { tripId = trip.Id })" class="text-decoration-none text-dark">
                                 <h5 class="card-title">@trip.Title</h5>
                                 <div class="d-flex align-items-center text-muted mb-2">
                                     <i class="bi bi-calendar me-2"></i>
@@ -60,12 +69,8 @@
                                         }
                                     </small>
                                 </div>
-                                <div class="d-flex align-items-center text-muted">
-                                    <i class="bi bi-geo-alt me-2"></i>
-                                    <small>@trip.PointsOfInterestCount places</small>
-                                </div>
-                            </a>
                         </div>
+                        </a>
                     </div>
                 </div>
             }
@@ -97,14 +102,27 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Show modal if there are validation errors
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <text>
-            $(document).ready(function() {
-                $('#createTripModal').modal('show');
+        $(document).ready(function() {
+            console.log("App Index page loaded");
+            
+            // Show modal if there are validation errors
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <text>
+                $('#createTripModal').modal('show')
+                </text>
+            }
+
+            // Handle modal events
+            $('#createTripModal').on('show.bs.modal', function() {
+                console.log("Modal is about to show");
+            }).on('shown.bs.modal', function() {
+                console.log("Modal has been shown");
+                // Initialize the form
+                if (typeof initializeCreateTripForm === 'function') {
+                    initializeCreateTripForm();
+                }
             });
-            </text>
-        }
+        });
     </script>
 }

@@ -53,18 +53,8 @@ namespace DotVacay.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Index([FromForm] CreateTripViewModel model)
         {
-            Console.WriteLine($"Starting trip creation for title: {model.Title}");
-
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("Model state is invalid");
-                foreach (var modelState in ModelState.Values)
-                {
-                    foreach (var error in modelState.Errors)
-                    {
-                        Console.WriteLine($"Validation error: {error.ErrorMessage}");
-                    }
-                }
                 var viewModel = new AppIndexViewModel { CreateTrip = model };
                 return View(viewModel);
             }
@@ -80,7 +70,6 @@ namespace DotVacay.Web.Controllers
             var client = clientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            Console.WriteLine("Sending request to API...");
             var response = await client.PostAsJsonAsync("api/Trip/create", new
             {
                 model.Title,

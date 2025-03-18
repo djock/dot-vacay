@@ -6,6 +6,7 @@ namespace DotVacay.Web.Models
     public class PointOfInterestViewModel
     {
         public int TripId { get; set; }
+        public int PoiId { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
         [StringLength(100, ErrorMessage = "Title cannot be longer than 100 characters")]

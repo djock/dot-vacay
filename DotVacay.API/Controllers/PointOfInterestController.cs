@@ -29,6 +29,8 @@ namespace DotVacay.API.Controllers
                 return BadRequest("UserId not found");
             }
 
+            Console.WriteLine("POI create");
+
             var request = new CreatePointOfInterestRequest(
                 UserId,
                 dto.Title,
@@ -37,7 +39,11 @@ namespace DotVacay.API.Controllers
                 dto.Latitude,
                 dto.Longitude,
                 dto.Type,
-                dto.TripId);
+                dto.TripId, 
+                dto.StartDate, 
+                dto.EndDate,
+                -1
+                );
 
             var result = await _service.CreateAsync(request);
             return HandleResult(result);
@@ -75,6 +81,32 @@ namespace DotVacay.API.Controllers
         #endregion
 
         #region PATCH
+
+        [HttpPatch("update/{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] CreatePointOfInterestDto dto)
+        {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                return BadRequest("UserId not found");
+            }
+
+            var request = new UpdatePointOfInterestRequest(
+               id,
+               UserId,
+               dto.Title,
+               dto.Description ?? "",
+               dto.Url ?? "",
+               dto.Latitude,
+               dto.Longitude,
+               dto.Type,
+               dto.TripId,
+               dto.StartDate,
+               dto.EndDate);
+
+            var result = await _service.UpdateAsync(request);
+            return HandleResult(result);
+        }
+
 
         [HttpPatch("update/{id}/type")]
         public async Task<IActionResult> UpdateTypeAsync(int id, [FromBody] PointOfInterestType newType)

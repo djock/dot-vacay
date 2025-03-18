@@ -119,8 +119,6 @@ namespace DotVacay.Application.Services
                 trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
             }
 
-            trip.UserTrips = [];
-
             return new TripResult(true, trip);
         }
 

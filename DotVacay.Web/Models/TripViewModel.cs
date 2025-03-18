@@ -1,4 +1,5 @@
 using DotVacay.Core.Entities;
+using DotVacay.Core.Enums;
 
 namespace DotVacay.Web.Models
 {
@@ -10,6 +11,8 @@ namespace DotVacay.Web.Models
         public DateTimeOffset? StartDate { get; set; }
         public DateTimeOffset? EndDate { get; set; }
         public ICollection<PointOfInterestViewModel> PointsOfInterest { get; set; } = [];
+        public CreatePointOfInterestViewModel CreatePointOfInterest { get; set; } = new();
+        public bool IsOwner { get; set; }
 
         public static TripViewModel FromTrip(Trip trip)
         {
@@ -30,7 +33,12 @@ namespace DotVacay.Web.Models
                     StartDate = poi.StartDate,
                     EndDate = poi.EndDate,
                     TripDayIndex = poi.TripDayIndex
-                }).ToList() ?? []
+                }).ToList() ?? [],
+                CreatePointOfInterest = new CreatePointOfInterestViewModel
+                {
+                    TripId = trip.Id
+                },
+                IsOwner = trip.UserTrips.FirstOrDefault(ut => ut.TripId == trip.Id)?.Role == UserTripRole.Owner
             };
         }
     }

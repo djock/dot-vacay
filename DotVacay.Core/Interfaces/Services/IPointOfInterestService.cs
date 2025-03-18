@@ -9,6 +9,7 @@ namespace DotVacay.Core.Interfaces.Services
         Task<RequestResult> DeleteAsync(UserResourceIdRequest userResourceIdRequest);
         Task<RequestResult> GetAllAsync(UserResourceIdRequest userResourceIdRequest);
         Task<RequestResult> GetByIdAsync(UserResourceIdRequest userResourceIdRequest);
+        Task<RequestResult> UpdateAsync(UpdatePointOfInterestRequest request);
         Task<RequestResult> UpdateTypeAsync(UpdateTypeRequest request);
         Task<RequestResult> UpdateTitleAsync(UpdateTextRequest request);
         Task<RequestResult> UpdateDescriptionAsync(UpdateTextRequest request);
