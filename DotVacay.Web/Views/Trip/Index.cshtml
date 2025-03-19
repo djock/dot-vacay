@@ -6,6 +6,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@if (TempData["FailMessage"] != null)
+{
+    <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-primary text-center">@TempData["SuccessMessage"]</div>
+}
+
 <div class="position-relative">
     <!-- Banner Image -->
     <div class="trip-banner" style="height: 400px; overflow: hidden; position: relative;">
@@ -76,118 +86,15 @@
                                    currentDate.Date <= p.EndDate.Value.Date)
                         .OrderBy(p => p.StartDate.Value.DateTime)
                         .ToList();
-                    <div class="card mb-4 shadow-sm">
-                        <div class="card-header bg-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">@currentDate.ToString("dddd, MMMM dd")</h5>
-                                <div>
-                                    <button type="button" class="btn btn-primary btn-sm" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#addPoiModal" 
-                                    data-date="@currentDate.ToString("yyyy-MM-dd")">
-                                        <i class="bi bi-plus"></i> Add Point of Interest
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            @if (dayPoints.Any())
-                            {
-                                <div class="timeline">
-                                    @foreach (var poi in dayPoints)
-                                    {
-                                        <div class="timeline-item mb-3">
-                                            <div class="d-flex">
-                                                <div class="timeline-icon me-3">
-                                                    @switch (poi.Type)
-                                                    {
-                                                        case PointOfInterestType.Hotel:
-                                                            <i class="bi bi-building text-primary"></i>
-                                                            break;
-                                                        case PointOfInterestType.CarRental:
-                                                            <i class="bi bi-car-front text-success"></i>
-                                                            break;
-                                                        case PointOfInterestType.Food:
-                                                            <i class="bi bi-cup-hot text-warning"></i>
-                                                            break;
-                                                        case PointOfInterestType.PlaceToVisit:
-                                                            <i class="bi bi-geo-alt text-danger"></i>
-                                                            break;
-                                                    }
-                                                </div>
-                                                <div class="timeline-content flex-grow-1">
-                                                    <div class="d-flex justify-content-between">
-                                                        <h6 class="mb-1">@poi.Title</h6>
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <small class="text-muted">
-                                                                @if(poi.Type == PointOfInterestType.Hotel)
-                                                                {
-                                                                    if (currentDate.Date == poi.StartDate.Value.Date)
-                                                                    {
-                                                                        @:Check in: @poi.StartDate.Value.ToString("HH:mm")
-                                                                    }
-                                                                    if (currentDate.Date == poi.EndDate.Value.Date)
-                                                                    {
-                                                                        @:Check out: @poi.EndDate.Value.ToString("HH:mm")
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (currentDate.Date == poi.StartDate.Value.Date)
-                                                                    {
-                                                                        @poi.StartDate.Value.ToString("HH:mm")
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <span>00:00</span>
-                                                                    }
-                                                                    @:-
-                                                                    if(currentDate.Date == poi.EndDate.Value.Date)
-                                                                                        {
-                                                                        @poi.EndDate.Value.ToString("HH:mm")
-                                                                    }
-                                                                                        else
-                                                                    {
-                                                                        <span>00:00</span>
-                                                                    }
-                                                                }
-                                                               
-                                                            </small>
-                                                            <button type="button" class="btn btn-sm btn-outline-primary edit-poi"
-                                                                    data-poi-id="@poi.PoiId"
-                                                                    data-poi-title="@poi.Title"
-                                                                    data-poi-description="@poi.Description"
-                                                                    data-poi-type="@poi.Type"
-                                                                    data-poi-start-date="@poi.StartDate.Value.ToString("yyyy-MM-ddTHH:mm")"
-                                                                    data-poi-end-date="@poi.EndDate.Value.ToString("yyyy-MM-ddTHH:mm")">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </button>
-                                                            <form asp-action="DeletePointOfInterest" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this point of interest?');">
-                                                                <input type="hidden" name="poiId" value="@poi.PoiId" />
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                    @if (!string.IsNullOrEmpty(poi.Description))
-                                                    {
-                                                        <p class="mb-0 text-muted">@poi.Description</p>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="text-center text-muted py-3">
-                                    <p class="mb-0">No points of interest added for this day.</p>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    
+                    var dayCardViewModel = new DotVacay.Web.Models.DayCardViewModel
+                    {
+                        CurrentDate = currentDate,
+                        PointsOfInterest = dayPoints
+                    };
+                    
+                    @await Html.PartialAsync("_DayCard", dayCardViewModel)
+                    
                     currentDate = currentDate.AddDays(1);
                 }
             }
@@ -196,7 +103,7 @@
 </div>
 
 
-<!-- Add/Edit Point of Interest Modal -->
+<!-- Add Point of Interest Modal -->
 <div class="modal fade" id="addPoiModal" tabindex="-1" aria-labelledby="addPoiModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -207,8 +114,30 @@
             <div class="modal-body">
                 @{
                     ViewData["TripId"] = Model.Id;
+                    // Create a new, empty ViewModel for the Add form
+                    var newPoi = new DotVacay.Web.Models.CreatePointOfInterestViewModel();
                 }
-                @await Html.PartialAsync("_CreatePointOfInterestForm", Model.CreatePointOfInterest)
+                @await Html.PartialAsync("_CreatePointOfInterestForm", newPoi)
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Point of Interest Modal -->
+<div class="modal fade" id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPoiModalLabel">Edit Point of Interest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    ViewData["TripId"] = Model.Id;
+                    // Use an empty model - it will be populated by JavaScript
+                    var editPoi = new DotVacay.Web.Models.CreatePointOfInterestViewModel();
+                }
+                @await Html.PartialAsync("_CreatePointOfInterestForm", editPoi)
             </div>
         </div>
     </div>
@@ -254,46 +183,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        $(document).ready(function() {
-            $('#addPoiModal').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                const selectedDate = button.data('date');
-                
-                // Set the start and end date fields to the selected date with default times
-                const startDateTime = `${selectedDate}T09:00`;
-                const endDateTime = `${selectedDate}T10:00`;
-                
-                $('input[name="StartDate"]').val(startDateTime);
-                $('input[name="EndDate"]').val(endDateTime);
-            });
-
-            // Handle edit button clicks
-            $('.edit-poi').on('click', function() {
-                const button = $(this);
-                const modal = $('#addPoiModal');
-                const form = modal.find('form');
-                
-                // Update modal title
-                modal.find('.modal-title').text('Edit Point of Interest');
-                
-                // Fill in the form fields
-                form.find('input[name="Title"]').val(button.data('poi-title'));
-                form.find('textarea[name="Description"]').val(button.data('poi-description'));
-                form.find('select[name="Type"]').val(button.data('poi-type'));
-                
-                // Handle dates if they exist
-                if (button.data('poi-start-date')) {
-                    form.find('input[name="StartDate"]').val(button.data('poi-start-date'));
-                    form.find('input[name="EndDate"]').val(button.data('poi-end-date'));
-                }
-                
-                // Add the POI ID to the form
-                form.append(`<input type="hidden" name="Id" value="${button.data('poi-id')}" />`);
-                
-                // Show the modal
-                modal.modal('show');
-            });
-        });
-    </script>
+    <script src="~/js/trip-index.js"></script>
 }

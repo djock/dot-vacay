@@ -1,0 +1,89 @@
+@using DotVacay.Core.Enums
+@model DotVacay.Web.Models.PointOfInterestViewModel
+@{
+    DateTime currentDate = (DateTime)ViewData["CurrentDate"];
+}
+
+<div class="timeline-item mb-3">
+    <div class="d-flex">
+        <div class="timeline-icon me-3">
+            @switch (Model.Type)
+            {
+                case PointOfInterestType.Hotel:
+                    <i class="bi bi-building text-primary"></i>
+                    break;
+                case PointOfInterestType.CarRental:
+                    <i class="bi bi-car-front text-success"></i>
+                    break;
+                case PointOfInterestType.Food:
+                    <i class="bi bi-cup-hot text-warning"></i>
+                    break;
+                case PointOfInterestType.PlaceToVisit:
+                    <i class="bi bi-geo-alt text-danger"></i>
+                    break;
+            }
+        </div>
+        <div class="timeline-content flex-grow-1">
+            <div class="d-flex justify-content-between">
+                <h6 class="mb-1">@Model.Title</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">
+                        @if(Model.Type == PointOfInterestType.Hotel)
+                        {
+                            if (currentDate.Date == Model.StartDate.Value.Date)
+                            {
+                                @:Check in: @Model.StartDate.Value.ToString("HH:mm")
+                            }
+                            if (currentDate.Date == Model.EndDate.Value.Date)
+                            {
+                                @:Check out: @Model.EndDate.Value.ToString("HH:mm")
+                            }
+                        }
+                        else
+                        {
+                            if (currentDate.Date == Model.StartDate.Value.Date)
+                            {
+                                @Model.StartDate.Value.ToString("HH:mm")
+                            }
+                            else
+                            {
+                                <span>00:00</span>
+                            }
+                            @:-
+                            if(currentDate.Date == Model.EndDate.Value.Date)
+                            {
+                                @Model.EndDate.Value.ToString("HH:mm")
+                            }
+                            else
+                            {
+                                <span>00:00</span>
+                            }
+                        }
+                    </small>
+                    <button type="button" class="btn btn-sm btn-outline-primary edit-poi"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editPoiModal"
+                            data-poi-id="@Model.PoiId"
+                            data-poi-title="@Model.Title"
+                            data-poi-description="@Model.Description"
+                            data-poi-type="@Model.Type"
+                            data-poi-start-date="@Model.StartDate.Value.ToString("yyyy-MM-ddTHH:mm")"
+                            data-poi-end-date="@Model.EndDate.Value.ToString("yyyy-MM-ddTHH:mm")">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form asp-action="DeletePointOfInterestItem" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this point of interest?');">
+                        <input type="hidden" name="poiId" value="@Model.PoiId" />
+                        <input type="hidden" name="tripId" value="@Model.TripId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <p class="mb-0 text-muted">@Model.Description</p>
+            }
+        </div>
+    </div>
+</div> 

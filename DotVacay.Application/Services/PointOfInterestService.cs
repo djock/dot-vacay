@@ -27,7 +27,7 @@ namespace DotVacay.Application.Services
 
             await pointOfInterestRepository.AddAsync(poi);
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
         public async Task<RequestResult> UpdateAsync(UpdatePointOfInterestRequest request)
         {
@@ -57,7 +57,7 @@ namespace DotVacay.Application.Services
 
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> DeleteAsync(UserResourceIdRequest request)
@@ -116,7 +116,7 @@ namespace DotVacay.Application.Services
 
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateDatesAsync(UpdateDatesRequest request)
@@ -136,7 +136,7 @@ namespace DotVacay.Application.Services
             poi.EndDate = request.EndDate;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateDescriptionAsync(UpdateTextRequest request)
@@ -155,7 +155,7 @@ namespace DotVacay.Application.Services
             poi.Description = request.NewText;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateTitleAsync(UpdateTextRequest request)
@@ -174,7 +174,7 @@ namespace DotVacay.Application.Services
             poi.Title = request.NewText;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateTripDayIndexAsync(UpdateTripDayIndexRequest request)
@@ -193,7 +193,7 @@ namespace DotVacay.Application.Services
             poi.TripDayIndex = request.NewTripDayIndex;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateTypeAsync(UpdateTypeRequest request)
@@ -208,7 +208,7 @@ namespace DotVacay.Application.Services
             poi.Type = request.NewType;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
 
         public async Task<RequestResult> UpdateUrlAsync(UpdateTextRequest request)
@@ -223,7 +223,7 @@ namespace DotVacay.Application.Services
             poi.Url = request.NewText;
             await pointOfInterestRepository.SaveChangesAsync();
 
-            return new RequestResult(true, poi);
+            return new RequestResult(true, null);
         }
     }
 }

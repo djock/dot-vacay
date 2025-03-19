@@ -1,5 +1,4 @@
-﻿using DotVacay.Core.Entities;
-using DotVacay.Core.Models.Results;
+﻿using DotVacay.Core.Models.Results;
 using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -10,6 +9,11 @@ namespace DotVacay.Web.Controllers
 {
     public class AppController(IHttpClientFactory clientFactory) : Controller
     {
+        private const string ApiGetAllTrips = "api/Trip/getAll";
+        private const string ApiCreateTrip = "api/Trip/create";
+        private const string ApiDeleteTrip = "api/Trip/delete/";
+        private const string ApiLeaveTrip = "api/Trip/leave/";
+
         public async Task<IActionResult> Index()
         {
             var token = GetAuthToken();
@@ -20,10 +24,8 @@ namespace DotVacay.Web.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.GetAsync("api/Trip/getAll");
+            var client = CreateAuthorizedClient(token);
+            var response = await client.GetAsync(ApiGetAllTrips);
 
             var viewModel = new AppIndexViewModel();
 
@@ -62,46 +64,35 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("No auth token found");
                 TempData["FailMessage"] = "Please log in to access this page.";
                 return RedirectToAction("Login", "Auth");
             }
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.PostAsJsonAsync("api/Trip/create", new
+            var client = CreateAuthorizedClient(token);
+            var response = await client.PostAsJsonAsync(ApiCreateTrip, new
             {
                 model.Title,
                 model.Description,
                 model.StartDate,
                 model.EndDate
             });
-            Console.WriteLine($"API Response Status: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Success Response Content: {responseContent}");
-
                 var result = JsonConvert.DeserializeObject<TripIdResult>(responseContent);
-                Console.WriteLine($"Parsed Result - Success: {result?.Success}, TripId: {result?.TripId}");
 
                 if (result != null && result.Success)
                 {
-                    Console.WriteLine($"Redirecting to Trip/Index with tripId: {result.TripId}");
                     TempData["SuccessMessage"] = "Trip created successfully!";
                     return RedirectToAction("Index", "Trip", new { tripId = result.TripId });
                 }
             }
 
-            Console.WriteLine("Request failed or result was unsuccessful");
             var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error Response Content: {errorContent}");
-
             var errorResponse = JsonConvert.DeserializeObject<RequestResult>(errorContent);
             TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to create trip.";
-            
+
             var errorViewModel = new AppIndexViewModel { CreateTrip = model };
             return View(errorViewModel);
         }
@@ -112,10 +103,8 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.DeleteAsync($"api/Trip/delete/{tripId}");
+            var client = CreateAuthorizedClient(token);
+            var response = await client.DeleteAsync($"{ApiDeleteTrip}{tripId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -136,10 +125,8 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.PostAsync($"api/Trip/leave/{tripId}", null);
+            var client = CreateAuthorizedClient(token);
+            var response = await client.PostAsync($"{ApiLeaveTrip}{tripId}", null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -162,6 +149,13 @@ namespace DotVacay.Web.Controllers
             }
 
             return string.Empty;
+        }
+
+        private HttpClient CreateAuthorizedClient(string token)
+        {
+            var client = clientFactory.CreateClient("ApiClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client;
         }
     }
 }

@@ -4,6 +4,7 @@ namespace DotVacay.Application.DTOs.Post
 {
     public record CreatePointOfInterestDto
     (
+        int? Id,
         int TripId ,
         string Title ,
         PointOfInterestType Type ,

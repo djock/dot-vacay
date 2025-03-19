@@ -1,0 +1,36 @@
+@using DotVacay.Core.Enums
+@model DotVacay.Web.Models.DayCardViewModel
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">@Model.CurrentDate.ToString("dddd, MMMM dd")</h5>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" 
+                data-bs-toggle="modal" 
+                data-bs-target="#addPoiModal" 
+                data-date="@Model.CurrentDate.ToString("yyyy-MM-dd")">
+                    <i class="bi bi-plus"></i> Add Point of Interest
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.PointsOfInterest.Any())
+        {
+            <div class="timeline">
+                @foreach (var poi in Model.PointsOfInterest)
+                {
+                    ViewData["CurrentDate"] = Model.CurrentDate;
+                    @await Html.PartialAsync("_PointOfInterestItem", poi)
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-3">
+                <p class="mb-0">No points of interest added for this day.</p>
+            </div>
+        }
+    </div>
+</div> 

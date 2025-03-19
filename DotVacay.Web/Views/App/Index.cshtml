@@ -13,6 +13,11 @@
     </div>
 </header>
 
+@if (TempData["FailMessage"] != null)
+{
+    <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
+}
+
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0">My Trips</h3>
@@ -99,30 +104,10 @@
     </div>
 </div>
 
+<div id="modelState" data-is-valid="@ViewData.ModelState.IsValid"></div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        $(document).ready(function() {
-            console.log("App Index page loaded");
-            
-            // Show modal if there are validation errors
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <text>
-                $('#createTripModal').modal('show')
-                </text>
-            }
-
-            // Handle modal events
-            $('#createTripModal').on('show.bs.modal', function() {
-                console.log("Modal is about to show");
-            }).on('shown.bs.modal', function() {
-                console.log("Modal has been shown");
-                // Initialize the form
-                if (typeof initializeCreateTripForm === 'function') {
-                    initializeCreateTripForm();
-                }
-            });
-        });
-    </script>
+    <script src="~/js/app-index.js"></script>
+    <script src="~/js/create-trip-form.js"></script>
 }

@@ -9,6 +9,12 @@ namespace DotVacay.Web.Controllers
 {
     public class TripController(IHttpClientFactory clientFactory) : Controller
     {
+        private const string ApiGetTripById = "api/Trip/getById/";
+        private const string ApiCreatePointOfInterest = "api/PointOfInterest/create";
+        private const string ApiUpdatePointOfInterest = "api/PointOfInterest/update";
+        private const string ApiLeaveTrip = "api/Trip/leave/";
+        private const string ApiDeletePointOfInterest = "api/PointOfInterest/delete/";
+
         public async Task<IActionResult> Index(int tripId)
         {
             var token = GetAuthToken();
@@ -19,10 +25,8 @@ namespace DotVacay.Web.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.GetAsync($"api/Trip/getById/{tripId}");
+            var client = CreateAuthorizedClient(token);
+            var response = await client.GetAsync(ApiGetTripById + tripId);
 
             if (response.IsSuccessStatusCode)
             {
@@ -36,7 +40,7 @@ namespace DotVacay.Web.Controllers
                     return View(TripViewModel.FromTrip(tripResult.Trip));
                 }
 
-                TempData["FailMessage"] = tripResult.Errors.FirstOrDefault();
+                TempData["FailMessage"] = tripResult.Errors?.FirstOrDefault();
                 return RedirectToAction("Index", "App");
             }
 
@@ -45,10 +49,8 @@ namespace DotVacay.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddPointOfInterest([Bind("Id,Title,Description,Type,StartDate,EndDate,Url,Address")] CreatePointOfInterestViewModel model, int tripId)
+        public async Task<IActionResult> UpdatePointOfInterest([Bind("Id,Title,Description,Type,StartDate,EndDate,Url,Address")] CreatePointOfInterestViewModel model, int tripId)
         {
-            Console.WriteLine("ModelState.IsValid " + ModelState.IsValid);
-
             if (!ModelState.IsValid)
             {
                 var errors = string.Join("; ", ModelState.Values
@@ -65,8 +67,7 @@ namespace DotVacay.Web.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = CreateAuthorizedClient(token);
 
             var pointOfInterestDto = new CreatePointOfInterestDto
             {
@@ -81,30 +82,41 @@ namespace DotVacay.Web.Controllers
                 Address = model.Address
             };
 
-            var endpoint = model.Id.HasValue ? "api/PointOfInterest/update" : "api/PointOfInterest/create";
-            var response = await client.PostAsJsonAsync(endpoint, pointOfInterestDto);
+            HttpResponseMessage response;
 
-            if (response.IsSuccessStatusCode)
+            if (model.Id.HasValue)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<TripResult>(responseContent);
-
-                if (result?.Success == true)
-                {
-                    TempData["SuccessMessage"] = model.Id.HasValue 
-                        ? "Point of interest updated successfully!" 
-                        : "Point of interest added successfully!";
-                    return RedirectToAction(nameof(Index), new { tripId });
-                }
-
-                TempData["FailMessage"] = result?.Errors?.FirstOrDefault() ?? "Failed to save point of interest.";
+                var updateEndpoint = $"{ApiUpdatePointOfInterest}/{model.Id.Value}";
+                Console.WriteLine($"Updating POI: PATCH {updateEndpoint}");
+                response = await PatchAsJsonAsync(client, updateEndpoint, pointOfInterestDto);
             }
             else
             {
-                TempData["FailMessage"] = "Failed to save point of interest.";
+                Console.WriteLine($"Creating new POI: POST {ApiCreatePointOfInterest}");
+                response = await client.PostAsJsonAsync(ApiCreatePointOfInterest, pointOfInterestDto);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = model.Id.HasValue
+                        ? "Point of interest updated successfully!"
+                        : "Point of interest added successfully!";
+            }
+            else
+            {
+                var contentString = await response.Content.ReadAsStringAsync();
+                TempData["FailMessage"] = $"Failed to save point of interest. Status: {response.StatusCode}, Response: {contentString}";
             }
 
             return RedirectToAction(nameof(Index), new { tripId });
+        }
+
+        // Helper method to send PATCH requests with JSON content
+        private static async Task<HttpResponseMessage> PatchAsJsonAsync<T>(HttpClient client, string requestUri, T value)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(value), System.Text.Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), requestUri) { Content = content };
+            return await client.SendAsync(request);
         }
 
         [HttpPost]
@@ -113,10 +125,8 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.DeleteAsync($"api/Trip/delete/{tripId}");
+            var client = CreateAuthorizedClient(token);
+            var response = await client.DeleteAsync($"{ApiDeletePointOfInterest}{tripId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -124,8 +134,24 @@ namespace DotVacay.Web.Controllers
             }
             else
             {
-                var errorResponse = await response.Content.ReadFromJsonAsync<RequestResult>();
-                TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to delete trip.";
+                try
+                {
+                    var contentString = await response.Content.ReadAsStringAsync();
+                    
+                    if (!string.IsNullOrWhiteSpace(contentString))
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<RequestResult>(contentString);
+                        TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to delete trip.";
+                    }
+                    else
+                    {
+                        TempData["FailMessage"] = $"Failed to delete trip. Status code: {response.StatusCode}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["FailMessage"] = $"Failed to delete trip. Error: {ex.Message}";
+                }
             }
 
             return RedirectToAction("Index", "App");
@@ -137,10 +163,8 @@ namespace DotVacay.Web.Controllers
             var token = GetAuthToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
 
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.PostAsync($"api/Trip/leave/{tripId}", null);
+            var client = CreateAuthorizedClient(token);
+            var response = await client.PostAsJsonAsync(ApiLeaveTrip, tripId);
 
             if (response.IsSuccessStatusCode)
             {
@@ -148,43 +172,92 @@ namespace DotVacay.Web.Controllers
             }
             else
             {
-                var errorResponse = await response.Content.ReadFromJsonAsync<RequestResult>();
-                TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to leave trip.";
+                try
+                {
+                    var contentString = await response.Content.ReadAsStringAsync();
+                    
+                    if (!string.IsNullOrWhiteSpace(contentString))
+                    {
+                        var errorResponse = JsonConvert.DeserializeObject<RequestResult>(contentString);
+                        TempData["FailMessage"] = contentString;
+                    }
+                    else
+                    {
+                        TempData["FailMessage"] = $"Failed to leave trip. Response content: {response.Content}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["FailMessage"] = $"Failed to leave trip. Error: {ex.Message}";
+                }
             }
 
             return RedirectToAction("Index", "App");
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeletePointOfInterest(int poiId)
+        [Route("DeletePointOfInterestItem")]
+        public async Task<IActionResult> DeletePointOfInterestItem(int poiId, int tripId)
         {
             var token = GetAuthToken();
-            if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
-
-            var client = clientFactory.CreateClient("ApiClient");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.DeleteAsync($"api/PointOfInterest/delete/{poiId}");
-
-            if (response.IsSuccessStatusCode)
+            if (string.IsNullOrEmpty(token)) 
             {
-                TempData["SuccessMessage"] = "Point of interest deleted successfully!";
-            }
-            else
-            {
-                var errorResponse = await response.Content.ReadFromJsonAsync<RequestResult>();
-                TempData["FailMessage"] = errorResponse?.Errors?.FirstOrDefault() ?? "Failed to delete point of interest.";
+                TempData["FailMessage"] = "Please log in to access this page.";
+                return RedirectToAction("Login", "Auth");
             }
 
-            // Get the tripId from the referer URL
-            var referer = Request.Headers["Referer"].ToString();
-            var tripIdMatch = System.Text.RegularExpressions.Regex.Match(referer, @"/Trip/Index/(\d+)");
-            if (tripIdMatch.Success && int.TryParse(tripIdMatch.Groups[1].Value, out int tripId))
+            var client = CreateAuthorizedClient(token);
+            
+            // Log the request URL for debugging
+            var requestUrl = ApiDeletePointOfInterest + poiId;
+            Console.WriteLine($"Deleting POI with URL: {requestUrl}");
+            
+            try
             {
-                return RedirectToAction(nameof(Index), new { tripId });
+                var response = await client.DeleteAsync(requestUrl);
+                
+                Console.WriteLine($"Delete POI response: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Point of interest deleted successfully!";
+                }
+                else
+                {
+                    // First read the content as a string
+                    var contentString = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error response content: {contentString}");
+                    
+                    // Only try to deserialize if we have content
+                    string errorMessage = $"Failed to delete point of interest. Status code: {response.StatusCode}";
+                    
+                    if (!string.IsNullOrWhiteSpace(contentString))
+                    {
+                        try
+                        {
+                            var errorResponse = JsonConvert.DeserializeObject<RequestResult>(contentString);
+                            if (errorResponse?.Errors?.Any() == true)
+                            {
+                                errorMessage = errorResponse.Errors.FirstOrDefault() ?? errorMessage;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Exception parsing delete response: {ex.Message}");
+                        }
+                    }
+                    
+                    TempData["FailMessage"] = errorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception making delete request: {ex}");
+                TempData["FailMessage"] = $"An error occurred: {ex.Message}";
             }
 
-            return RedirectToAction("Index", "App");
+            // Redirect directly to the Trip/Index page with the provided tripId
+            return RedirectToAction(nameof(Index), new { tripId });
         }
 
         private string GetAuthToken()
@@ -195,6 +268,13 @@ namespace DotVacay.Web.Controllers
             }
 
             return string.Empty;
+        }
+
+        private HttpClient CreateAuthorizedClient(string token)
+        {
+            var client = clientFactory.CreateClient("ApiClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client;
         }
     }
 }

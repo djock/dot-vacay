@@ -2,7 +2,7 @@
 @model DotVacay.Web.Models.CreatePointOfInterestViewModel
 
 <div class="container mt-2 mb-2" style="max-width:400px; margin:auto;">
-    <form asp-controller="Trip" asp-action="AddPointOfInterest" method="post">
+    <form asp-controller="Trip" asp-action="UpdatePointOfInterest" method="post">
         <input type="hidden" name="tripId" value="@ViewData["TripId"]" />
         <div class="mb-3">
             <label asp-for="Title" class="form-label">Title</label>
@@ -46,43 +46,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        $(document).ready(function() {
-            const startDateInput = document.querySelector('input[name="StartDate"]');
-            const endDateInput = document.querySelector('input[name="EndDate"]');
-
-            // Format current date for date input
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day}T${hours}:${minutes}`;
-            };
-
-            // Set default dates
-            const now = new Date();
-            startDateInput.value = formatDate(now);
-            startDateInput.min = formatDate(now);
-            
-            const endDate = new Date(now);
-            endDate.setHours(endDate.getHours() + 1);
-            endDateInput.value = formatDate(endDate);
-            endDateInput.min = startDateInput.value;
-
-            // Add validation to ensure end date is after start date
-            startDateInput.addEventListener('change', function() {
-                endDateInput.min = this.value;
-                const startDate = new Date(this.value);
-                const endDate = new Date(endDateInput.value);
-                
-                if (endDate <= startDate) {
-                    const newEndDate = new Date(startDate);
-                    newEndDate.setHours(startDate.getHours() + 1);
-                    endDateInput.value = formatDate(newEndDate);
-                }
-            });
-        });
-    </script>
+    <script src="~/js/create-point-of-interest-form.js"></script>
 } 

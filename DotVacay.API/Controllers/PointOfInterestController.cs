@@ -91,17 +91,17 @@ namespace DotVacay.API.Controllers
             }
 
             var request = new UpdatePointOfInterestRequest(
-               id,
-               UserId,
-               dto.Title,
-               dto.Description ?? "",
-               dto.Url ?? "",
-               dto.Latitude,
-               dto.Longitude,
-               dto.Type,
-               dto.TripId,
-               dto.StartDate,
-               dto.EndDate);
+                  id,
+                  UserId,
+                  dto.Title,
+                  dto.Description ?? "",
+                  dto.Url ?? "",
+                  dto.Latitude,
+                  dto.Longitude,
+                  dto.Type,
+                  dto.TripId,
+                  dto.StartDate,
+                  dto.EndDate);
 
             var result = await _service.UpdateAsync(request);
             return HandleResult(result);
@@ -212,9 +212,9 @@ namespace DotVacay.API.Controllers
                 : result.Errors?.First() switch
                 {
                     "Forbidden" => Forbid(),
-                    "Trip not found" => NotFound(result.Errors),
-                    "Point not found" => NotFound(result.Errors),
-                    _ => BadRequest(result.Errors)
+                    "Trip not found" => NotFound(result),
+                    "Point not found" => NotFound(result),
+                    _ => BadRequest(result)
                 };
         }
     }

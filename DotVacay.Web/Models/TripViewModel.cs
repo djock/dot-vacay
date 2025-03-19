@@ -25,6 +25,7 @@ namespace DotVacay.Web.Models
                 EndDate = trip.EndDate,
                 PointsOfInterest = trip.PointsOfInterest?.Select(poi => new PointOfInterestViewModel
                 {
+                    PoiId = poi.Id,
                     TripId = trip.Id,
                     Title = poi.Title,
                     Type = poi.Type,
