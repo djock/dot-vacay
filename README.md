@@ -85,13 +85,9 @@ DotVacay/
 2. **Installation**
    ```bash
    # Clone the repository
-   git clone https://github.com/yourusername/DotVacay.git
+   git clone https://github.com/djock/dot-vacay.git
 
-   # Navigate to the project directory
-   cd DotVacay
-
-   # Restore dependencies
-   dotnet restore
+   # Open the solution in Visual Studio
 
    # Update database
    dotnet ef database update
@@ -103,7 +99,7 @@ DotVacay/
 
 4. **Running the Application**
    ```bash
-   dotnet run --project DotVacay.Web
+   dotnet run --project DotVacay.ApiWeb
    ```
 
 ## Contributing
