@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace DotVacay.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [Authorize]
     public class PointOfInterestController(IPointOfInterestService service) : ControllerBase

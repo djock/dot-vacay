@@ -91,7 +91,7 @@ namespace DotVacay.Web.Controllers
                      {
                          Expires = DateTime.Now.AddMinutes(60),
                          HttpOnly = true, // Prevent client-side access
-                         Secure = true    // Ensure it is sent over HTTPS
+                         Secure = false
                      });
             }
             catch (Exception e)

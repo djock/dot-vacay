@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DotVacay.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
 {

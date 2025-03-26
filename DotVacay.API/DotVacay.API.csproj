@@ -27,4 +27,8 @@
     <ProjectReference Include="..\DotVacay.Infrastructure\DotVacay.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
 </Project>
