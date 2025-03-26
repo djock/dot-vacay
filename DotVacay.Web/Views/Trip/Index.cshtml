@@ -34,6 +34,20 @@
                             <i class="bi bi-calendar me-2"></i>
                             @Model.StartDate.Value.ToString("MMM dd") - @Model.EndDate.Value.ToString("MMM dd, yyyy")
                         </div>
+                        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                        {
+                            <div class="mt-2">
+                                <a href="https://www.google.com/maps?q=@Model.Latitude,@Model.Longitude"
+                                   target="_blank"
+                                   class="text-decoration-none">
+                                    <i class="bi bi-geo-alt"></i> View on Map
+                                </a>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="mb-0">@Model.Description</p>
+                        }
                     </div>
                     <div class="d-flex justify-content-end gap-2 mb-3">
                         <a href="@Url.Action("Index", "App")" class="btn btn-outline-secondary">
@@ -61,13 +75,8 @@
 
                 </div>
             </div>
-            @if (!string.IsNullOrEmpty(Model.Description))
-            {
-                <p class="mb-0">@Model.Description</p>
-            }
         </div>
     </div>
-</div>
 </div>
 
 <!-- Daily Itinerary -->
@@ -183,5 +192,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="~/js/trip-index.js"></script>
+    <script src="~/js/tripIndex.js"></script>
+    <script src="~/js/createPointOfInterestForm.js"></script>
 }

@@ -5,6 +5,8 @@
         string Title,
         string? Description,
         DateTimeOffset? StartDate,
-        DateTimeOffset? EndDate
+        DateTimeOffset? EndDate,
+        double Latitude,
+        double Longitude
     );
 }

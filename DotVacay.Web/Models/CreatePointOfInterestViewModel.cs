@@ -32,6 +32,9 @@ namespace DotVacay.Web.Models
         [CustomValidation(typeof(CreatePointOfInterestViewModel), nameof(ValidateEndDate))]
         public DateTimeOffset EndDate { get; set; }
 
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
         public static ValidationResult? ValidateEndDate(DateTimeOffset endDate, ValidationContext context)
         {
             var instance = (CreatePointOfInterestViewModel)context.ObjectInstance;

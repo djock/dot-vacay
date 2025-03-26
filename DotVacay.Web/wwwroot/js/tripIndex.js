@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    console.log("Trip Index page loaded");
-    
     // Handle add modal events - use Bootstrap's event handling
     $('#addPoiModal').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget);

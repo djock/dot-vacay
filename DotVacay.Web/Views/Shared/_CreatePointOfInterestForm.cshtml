@@ -4,11 +4,22 @@
 <div class="container mt-2 mb-2" style="max-width:400px; margin:auto;">
     <form asp-controller="Trip" asp-action="UpdatePointOfInterest" method="post">
         <input type="hidden" name="tripId" value="@ViewData["TripId"]" />
-        <div class="mb-3">
-            <label asp-for="Title" class="form-label">Title</label>
-            <input asp-for="Title" class="form-control" placeholder="Point of Interest Title" required />
+        <label asp-for="Title" class="form-label">Location</label>
+        <div class="form-floating mb-3">
+            <div class="position-relative">
+                <input type="text" 
+                       id="locationInput" 
+                       name="Title"
+                       class="form-control" 
+                       placeholder="Search for a location..." 
+                       autocomplete="off"
+                       required />
+                <div id="locationDropdown" class="location-dropdown"></div>
+            </div>
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
+        <input type="hidden" asp-for="Latitude" />
+        <input type="hidden" asp-for="Longitude" />
         <div class="mb-3">
             <label asp-for="Description" class="form-label">Description</label>
             <textarea asp-for="Description" class="form-control" placeholder="Description" rows="3"></textarea>
@@ -43,8 +54,3 @@
         </div>
     </form>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="~/js/create-point-of-interest-form.js"></script>
-} 

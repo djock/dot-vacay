@@ -29,8 +29,6 @@ namespace DotVacay.API.Controllers
                 return BadRequest("UserId not found");
             }
 
-            Console.WriteLine("POI create");
-
             var request = new CreatePointOfInterestRequest(
                 UserId,
                 dto.Title,

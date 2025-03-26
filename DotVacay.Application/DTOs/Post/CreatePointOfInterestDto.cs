@@ -13,7 +13,6 @@ namespace DotVacay.Application.DTOs.Post
         double Latitude ,
         double Longitude ,
         DateTimeOffset? StartDate ,
-        DateTimeOffset? EndDate ,
-        int? TripDayIndex
+        DateTimeOffset? EndDate
     );
 }

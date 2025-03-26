@@ -9,6 +9,8 @@ namespace DotVacay.Core.Entities
         public DateTimeOffset? StartDate { get; set; }
         public DateTimeOffset? EndDate { get; set; }
         public string? Description { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public ICollection<UserTrip> UserTrips { get; set; } = [];
         public ICollection<PointOfInterest>? PointsOfInterest { get; set; }
     }

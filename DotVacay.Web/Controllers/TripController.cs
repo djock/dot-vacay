@@ -1,4 +1,4 @@
-﻿using DotVacay.Core.Models.Dtos;
+﻿using DotVacay.Application.DTOs.Post;
 using DotVacay.Core.Models.Results;
 using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +14,7 @@ namespace DotVacay.Web.Controllers
         private const string ApiUpdatePointOfInterest = "api/PointOfInterest/update";
         private const string ApiLeaveTrip = "api/Trip/leave/";
         private const string ApiDeletePointOfInterest = "api/PointOfInterest/delete/";
+        private const string ApiLocationSearch = "api/Location/searchPoi";
 
         public async Task<IActionResult> Index(int tripId)
         {
@@ -49,7 +50,7 @@ namespace DotVacay.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdatePointOfInterest([Bind("Id,Title,Description,Type,StartDate,EndDate,Url,Address")] CreatePointOfInterestViewModel model, int tripId)
+        public async Task<IActionResult> UpdatePointOfInterest([Bind("Id,Title,Description,Type,StartDate,EndDate,Url,Latitude, Longitude")] CreatePointOfInterestViewModel model, int tripId)
         {
             if (!ModelState.IsValid)
             {
@@ -69,18 +70,19 @@ namespace DotVacay.Web.Controllers
 
             var client = CreateAuthorizedClient(token);
 
-            var pointOfInterestDto = new CreatePointOfInterestDto
-            {
-                Id = model.Id,
-                Title = model.Title,
-                Description = model.Description ?? "",
-                Type = model.Type,
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
-                TripId = tripId,
-                Url = model.Url,
-                Address = model.Address
-            };
+            var pointOfInterestDto = new CreatePointOfInterestDto(
+                Id: model.Id,
+                TripId: tripId,
+                Title: model.Title,
+                Type: model.Type,
+                Description: model.Description ?? "",
+                Url: model.Url,
+                Latitude: model.Latitude,
+                Longitude: model.Longitude,
+                StartDate: model.StartDate,
+                EndDate: model.EndDate
+            );
+
 
             HttpResponseMessage response;
 
@@ -275,6 +277,25 @@ namespace DotVacay.Web.Controllers
             var client = clientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return client;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchPointsOfInterest([FromQuery] string query)
+        {
+            var token = GetAuthToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
+
+            var client = CreateAuthorizedClient(token);
+
+            var response = await client.GetAsync($"{ApiLocationSearch}?query={Uri.EscapeDataString(query)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return Ok(content);
+            }
+
+            return BadRequest("Failed to fetch locations");
         }
     }
 }

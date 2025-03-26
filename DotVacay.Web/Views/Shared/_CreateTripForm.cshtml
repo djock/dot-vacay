@@ -2,9 +2,18 @@
 
 <div class="container mt-3 mb-3" style="max-width:400px; margin:auto;">
     <form asp-controller="App" asp-action="Index" method="post">
-        <div class="mb-3">
-            <label asp-for="Title" class="form-label">Title</label>
-            <input asp-for="Title" class="form-control" placeholder="Trip Title" required />
+        <label asp-for="Title" class="form-label">Location</label>
+        <div class="form-floating mb-3" >
+            <div class="position-relative">
+                <input type="text" 
+                       id="locationInput" 
+                       asp-for="Title"
+                       class="form-control" 
+                       placeholder="Search for a location..." 
+                       autocomplete="off"
+                       required />
+                <div id="locationDropdown" class="location-dropdown"></div>
+            </div>
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
         <div class="mb-3">
@@ -21,6 +30,10 @@
             <input asp-for="EndDate" type="date" class="form-control" placeholder="End Date" required />
             <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Create Trip</button>
+        <input type="hidden" asp-for="Latitude" />
+        <input type="hidden" asp-for="Longitude" />
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">Create Trip</button>
+        </div>
     </form>
 </div>

@@ -21,7 +21,10 @@ namespace DotVacay.Application.Services
             {
                 Title = request.Title,
                 StartDate = request.StartDate,
-                EndDate = request.EndDate
+                EndDate = request.EndDate,
+                Description = request.Description,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude
             };
 
             var userTrip = new UserTrip

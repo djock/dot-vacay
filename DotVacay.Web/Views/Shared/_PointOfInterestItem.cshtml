@@ -9,26 +9,45 @@
         <div class="timeline-icon me-3">
             @switch (Model.Type)
             {
-                case PointOfInterestType.Hotel:
+                case PointOfInterestType.Accomodation:
                     <i class="bi bi-building text-primary"></i>
                     break;
-                case PointOfInterestType.CarRental:
-                    <i class="bi bi-car-front text-success"></i>
+                case PointOfInterestType.Transportation:
+                    <i class="bi bi-car-front text-primary"></i>
                     break;
-                case PointOfInterestType.Food:
-                    <i class="bi bi-cup-hot text-warning"></i>
+                case PointOfInterestType.Restaurant:
+                    <i class="bi bi-cup-hot text-primary"></i>
                     break;
-                case PointOfInterestType.PlaceToVisit:
-                    <i class="bi bi-geo-alt text-danger"></i>
+                case PointOfInterestType.Coffee:
+                    <i class="bi bi-cup-hot text-primary"></i>
+                    break;
+                case PointOfInterestType.Museum:
+                    <i class="bi bi-geo-alt text-primary"></i>
+                    break;
+                case PointOfInterestType.Landmark:
+                    <i class="bi bi-compass text-primary"></i>
+                    break;
+                case PointOfInterestType.Shopping:
+                    <i class="bi bi-cart text-primary"></i>
                     break;
             }
         </div>
         <div class="timeline-content flex-grow-1">
             <div class="d-flex justify-content-between">
                 <h6 class="mb-1">@Model.Title</h6>
+                @if (Model.Latitude.HasValue && Model.Longitude.HasValue && Model.Latitude != 0 && Model.Longitude != 0)
+                {
+                    <div class="mt-2">
+                        <a href="https://www.google.com/maps?q=@Model.Latitude,@Model.Longitude"
+                           target="_blank"
+                           class="text-decoration-none">
+                            <i class="bi bi-geo-alt"></i> View on Map
+                        </a>
+                    </div>
+                }
                 <div class="d-flex align-items-center gap-2">
                     <small class="text-muted">
-                        @if(Model.Type == PointOfInterestType.Hotel)
+                        @if (Model.Type == PointOfInterestType.Accomodation)
                         {
                             if (currentDate.Date == Model.StartDate.Value.Date)
                             {

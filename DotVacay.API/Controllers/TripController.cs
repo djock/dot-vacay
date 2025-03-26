@@ -28,8 +28,7 @@ namespace DotVacay.API.Controllers
         [ProducesResponseType(typeof(TripIdResult), StatusCodes.Status400BadRequest)] // Bad Request
         public async Task<IActionResult> CreateAsync([FromBody] CreateTripDto dto)
         {
-
-            var request = new CreateTripRequest(dto.Title, dto.StartDate, dto.EndDate, UserEmail);
+            var request = new CreateTripRequest(dto.Title, dto.Description, dto.StartDate, dto.EndDate, dto.Latitude, dto.Longitude, UserEmail);
             var result = await _service.CreateAsync(request);
 
             if(result.Success)

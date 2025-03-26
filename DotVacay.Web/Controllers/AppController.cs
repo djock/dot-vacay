@@ -13,6 +13,7 @@ namespace DotVacay.Web.Controllers
         private const string ApiCreateTrip = "api/Trip/create";
         private const string ApiDeleteTrip = "api/Trip/delete/";
         private const string ApiLeaveTrip = "api/Trip/leave/";
+        private const string ApiLocationSearch = "api/Location/search";
 
         public async Task<IActionResult> Index()
         {
@@ -74,7 +75,9 @@ namespace DotVacay.Web.Controllers
                 model.Title,
                 model.Description,
                 model.StartDate,
-                model.EndDate
+                model.EndDate,
+                model.Latitude,
+                model.Longitude
             });
 
             if (response.IsSuccessStatusCode)
@@ -139,6 +142,25 @@ namespace DotVacay.Web.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchLocations([FromQuery] string query)
+        {
+            var token = GetAuthToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Auth", new { failMessage = "Please login to continue." });
+
+            var client = CreateAuthorizedClient(token);
+
+            var response = await client.GetAsync($"{ApiLocationSearch}?query={Uri.EscapeDataString(query)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return Ok(content);
+            }
+
+            return BadRequest("Failed to fetch locations");
         }
 
         private string GetAuthToken()

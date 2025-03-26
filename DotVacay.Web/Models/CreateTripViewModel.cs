@@ -6,13 +6,16 @@ namespace DotVacay.Web.Models
     {
         [Required(ErrorMessage = "Title is required")]
         [StringLength(100, ErrorMessage = "Title cannot be longer than 100 characters")]
-        public string Title { get; set; } = string.Empty;
+        public required string Title { get; set; }
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Start date is required")]
-        public DateTimeOffset StartDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
 
         [Required(ErrorMessage = "End date is required")]
-        public DateTimeOffset EndDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
+
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
     }
 } 

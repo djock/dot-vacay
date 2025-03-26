@@ -2,9 +2,12 @@
 {
     public enum PointOfInterestType
     {
-        Hotel,
-        CarRental,
-        Food,
-        PlaceToVisit
+        Accomodation,
+        Transportation,
+        Restaurant,
+        Coffee,
+        Museum,
+        Landmark,
+        Shopping
     }
 }

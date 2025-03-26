@@ -11,8 +11,10 @@ namespace DotVacay.Web.Models
         public DateTimeOffset? StartDate { get; set; }
         public DateTimeOffset? EndDate { get; set; }
         public ICollection<PointOfInterestViewModel> PointsOfInterest { get; set; } = [];
-        public CreatePointOfInterestViewModel CreatePointOfInterest { get; set; } = new();
+        public CreatePointOfInterestViewModel CreatePointOfInterest { get; set; } = new() { Title  = String.Empty};
         public bool IsOwner { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         public static TripViewModel FromTrip(Trip trip)
         {
@@ -33,13 +35,18 @@ namespace DotVacay.Web.Models
                     Url = poi.Url,
                     StartDate = poi.StartDate,
                     EndDate = poi.EndDate,
-                    TripDayIndex = poi.TripDayIndex
+                    TripDayIndex = poi.TripDayIndex,
+                    Latitude = poi.Latitude,
+                    Longitude = poi.Longitude
                 }).ToList() ?? [],
                 CreatePointOfInterest = new CreatePointOfInterestViewModel
                 {
-                    TripId = trip.Id
+                    TripId = trip.Id,
+                    Title = string.Empty
                 },
-                IsOwner = trip.UserTrips.FirstOrDefault(ut => ut.TripId == trip.Id)?.Role == UserTripRole.Owner
+                IsOwner = trip.UserTrips.FirstOrDefault(ut => ut.TripId == trip.Id)?.Role == UserTripRole.Owner,
+                Latitude = trip.Latitude,
+                Longitude = trip.Longitude
             };
         }
     }

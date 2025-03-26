@@ -61,6 +61,7 @@ builder.Services.AddScoped<IPointOfInterestRepository, PointOfInterestRepository
 builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Services.AddHttpClient();
 
 builder.Services.AddOpenApi();
 

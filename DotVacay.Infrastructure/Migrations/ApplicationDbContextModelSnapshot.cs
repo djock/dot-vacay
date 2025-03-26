@@ -145,6 +145,12 @@ namespace DotVacay.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("REAL");
+
                     b.Property<DateTimeOffset?>("StartDate")
                         .HasColumnType("TEXT");
 

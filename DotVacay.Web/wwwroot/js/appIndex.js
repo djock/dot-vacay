@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    console.log("App Index page loaded");
-    
     // Show modal if there are validation errors
     var isValid = $('#modelState').data('is-valid');
     if (isValid === false) {
@@ -8,10 +6,7 @@ $(document).ready(function() {
     }
 
     // Handle modal events
-    $('#createTripModal').on('show.bs.modal', function() {
-        console.log("Modal is about to show");
-    }).on('shown.bs.modal', function() {
-        console.log("Modal has been shown");
+    $('#createTripModal').on('shown.bs.modal', function() {
         // Initialize the form
         if (typeof initializeCreateTripForm === 'function') {
             initializeCreateTripForm();
