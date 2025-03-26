@@ -1,22 +1,29 @@
 ﻿using DotVacay.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 
 namespace DotVacay.Web.Controllers
 {
-    public class RegistrationController(IHttpClientFactory clientFactory) : Controller
+    public class RegistrationController(IHttpClientFactory clientFactory, IWebHostEnvironment environment) : Controller
     {
+
         [HttpGet]
         public IActionResult Register()
         {
+            ViewBag.IsProduction = environment.IsProduction();
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegistrationModel model)
         {
+            if (environment.IsProduction())
+            {
+                return RedirectToAction("Login");
+            }
+
             if (!ModelState.IsValid)
             {
+                ViewBag.IsProduction = environment.IsProduction();
                 return View();
             }
 
