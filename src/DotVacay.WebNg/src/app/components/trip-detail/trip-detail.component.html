@@ -1,0 +1,70 @@
+<header class="header">
+  <div class="logo">
+    <h3>DotVacay</h3>
+  </div>
+  <div class="auth-buttons">
+    <a href="#" class="btn btn-light"><i class="bi bi-person-circle"></i></a>
+  </div>
+</header>
+
+<div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
+<div *ngIf="successMessage" class="alert alert-success text-center">{{ successMessage }}</div>
+
+<div class="container mt-5" *ngIf="loading">
+  <div class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5" *ngIf="!loading && trip">
+  <div class="row">
+    <div class="col-md-8">
+      <h2>{{ trip.title }}</h2>
+      <p class="text-muted">
+        {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
+      </p>
+      <p>{{ trip.description }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <div class="d-flex justify-content-end gap-2">
+        <a routerLink="/trips" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Back to Trips
+        </a>
+        <button *ngIf="trip.isOwner" class="btn btn-danger" (click)="deleteTrip()">
+          <i class="bi bi-trash"></i>
+        </button>
+        <button *ngIf="!trip.isOwner" class="btn btn-warning" (click)="leaveTrip()">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Points of Interest -->
+  <div class="mt-5" *ngIf="trip.pointsOfInterest && trip.pointsOfInterest.length > 0">
+    <h3>Itinerary</h3>
+    <div class="timeline mt-4">
+      <div class="timeline-item mb-4" *ngFor="let poi of trip.pointsOfInterest">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ poi.title }}</h5>
+            <p class="card-text">{{ poi.description }}</p>
+            <p class="card-text">
+              <small class="text-muted">
+                {{ poi.startDate | date:'medium' }} - {{ poi.endDate | date:'medium' }}
+              </small>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mt-5" *ngIf="!trip.pointsOfInterest || trip.pointsOfInterest.length === 0">
+    <div class="alert alert-info">
+      No points of interest added to this trip yet.
+    </div>
+  </div>
+</div>

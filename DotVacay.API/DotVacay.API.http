@@ -1,6 +1,0 @@
-@DotVacay.API_HostAddress = http://localhost:5111
-
-GET {{DotVacay.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
