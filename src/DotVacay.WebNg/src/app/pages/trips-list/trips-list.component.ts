@@ -5,14 +5,16 @@ import { RouterLink } from '@angular/router';
 import { TripService } from '../../services/trip.service';
 import { CreateTripModel } from '../../models/create-trip.model';
 import { TripListItemModel } from '../../models/trip-list-item.model';
+import { AppHeaderComponent } from "../../components/app-header/app-header.component"
 
 @Component({
   selector: 'app-trips-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AppHeaderComponent],
   templateUrl: './trips-list.component.html',
   styleUrls: ['./trips-list.component.css']
 })
+
 export class TripsListComponent implements OnInit {
   trips: TripListItemModel[] = [];
   createTrip: CreateTripModel = new CreateTripModel();

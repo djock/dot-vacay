@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';import { TripService } from '../../services/trip.service';
 import { FormsModule } from '@angular/forms';
+import { AppHeaderComponent } from "../../components/app-header/app-header.component"
 
 @Component({
   selector: 'app-trip-detail',
-  standalone: true, imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './trip-detail.component.html', styleUrls: ['./trip-detail.component.css']
-}) export class TripDetailComponent implements OnInit {
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink, AppHeaderComponent],
+  templateUrl: './trip-detail.component.html',
+  styleUrls: ['./trip-detail.component.css']
+})
+export class TripDetailComponent implements OnInit {
   tripId: string = ''; trip: any = null;
   errorMessage: string = ''; successMessage: string = '';
   loading: boolean = true;
