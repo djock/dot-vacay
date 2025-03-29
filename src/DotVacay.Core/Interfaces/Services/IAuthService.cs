@@ -7,5 +7,6 @@ namespace DotVacay.Core.Interfaces.Services
     {
         Task<AuthResult> RegisterAsync(RegisterRequest request);
         Task<AuthResult> LoginAsync(LoginRequest request);
+        Task<ProfileResult> GetProfile(string userEmail);
     }
 }

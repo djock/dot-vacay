@@ -2,10 +2,17 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { UserProfile } from '../models/user-profile.model';
 
 interface AuthResponse {
   success: boolean;
   token: string;
+  errors?: string[];
+}
+
+interface ProfileResponse {
+  success: boolean;
+  userProfile: UserProfile;  
   errors?: string[];
 }
 
@@ -20,7 +27,8 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (response.success && response.token) {
-            this.storeToken(response.token);
+            this.storeKey('token', response.token);
+            this.storeKey('email', userData.email);
           }
         })
       );
@@ -36,35 +44,42 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (response.success && response.token) {
-            this.storeToken(response.token);
+            this.storeKey('token', response.token);
+            this.storeKey('email', userData.email);
           }
         })
       );
   }
 
-  private storeToken(token: string): void {
-    localStorage.setItem('token', token);
+  private storeKey(key: string, value: string): void {
+    localStorage.setItem(key, value);
   }
 
+  private getKey(key: string): string | null {
+    return localStorage.getItem(key);
+  }
+
+
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.getKey('token');
+  }
+
+  getUserEmail(): string | null {
+    return this.getKey('email');
   }
 
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
-    return !!token; // Returns true if token exists
+    return !!token;
   }
 
   logout(): void {
     localStorage.removeItem('token');
   }
+
+  getProfile(): Observable<ProfileResponse> {
+    const email = this.getUserEmail();
+    return this.apiService.get<ProfileResponse>(`/Auth/getProfile?userEmail=${encodeURIComponent(email || '')}`);
+  }
 }
-
-
-
-
-
-
-
-
 

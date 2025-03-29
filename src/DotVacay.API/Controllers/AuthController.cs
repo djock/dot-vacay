@@ -12,7 +12,6 @@ namespace DotVacay.API.Controllers;
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    private readonly IAuthService _authService = authService;
 
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResult), StatusCodes.Status200OK)]
@@ -25,7 +24,7 @@ public class AuthController(IAuthService authService) : ControllerBase
             dto.FirstName,
             dto.LastName);
 
-        var result = await _authService.RegisterAsync(request);
+        var result = await authService.RegisterAsync(request);
 
         if (result.Success)
         {
@@ -41,7 +40,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
     {
         var request = new LoginRequest(dto.Email, dto.Password);
-        var result = await _authService.LoginAsync(request);
+        var result = await authService.LoginAsync(request);
 
         if (result.Success)
         {
@@ -57,5 +56,18 @@ public class AuthController(IAuthService authService) : ControllerBase
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         return Ok();
+    }
+
+    [HttpGet("getProfile")] 
+    public async Task<IActionResult> GetProfile([FromQuery] string userEmail)
+    {
+        var result = await authService.GetProfile(userEmail);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return BadRequest(result);
     }
 }

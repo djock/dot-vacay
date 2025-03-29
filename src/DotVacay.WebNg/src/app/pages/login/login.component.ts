@@ -27,7 +27,6 @@ export class LoginComponent {
       password: this.password
     }).subscribe({
       next: (response) => {
-        console.log('Login successful', response);
         this.router.navigate(['/trips']); 
       },
       error: (error) => {
