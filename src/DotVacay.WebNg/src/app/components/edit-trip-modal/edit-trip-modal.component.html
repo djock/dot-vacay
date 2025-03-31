@@ -1,0 +1,78 @@
+<div class="container mt-3 mb-3" style="max-width:400px; margin:auto;">
+  <form (ngSubmit)="onSubmit()">
+    <label for="locationInput" class="form-label">Location</label>
+    <div class="form-floating mb-3">
+      <div class="position-relative">
+        <input type="text"
+               id="locationInput"
+               [(ngModel)]="tripModel.title"
+               name="title"
+               class="form-control"
+               placeholder="Search for a location..."
+               autocomplete="off"
+               (input)="onLocationInput($event)"
+               required />
+        <div id="locationDropdown" class="location-dropdown" [style.display]="showDropdown ? 'block' : 'none'">
+          <div *ngIf="isLoading" class="p-2">Loading...</div>
+          <div *ngIf="!isLoading && locations.length === 0 && searchQuery.length >= 2" class="p-2">No locations found</div>
+          <div *ngIf="!isLoading && locations.length > 0" class="location-options">
+            <div *ngFor="let location of locations" class="location-option" (click)="selectLocation(location)">
+              <div class="location-name">{{location.display_name.split(',')[0]}}</div>
+              <div class="location-details text-muted small">{{location.display_name.split(',').slice(1, 3).join(',')}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="validationErrors.title" class="text-danger">{{validationErrors.title}}</div>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea 
+        id="description"
+        [(ngModel)]="tripModel.description" 
+        name="description" 
+        class="form-control" 
+        placeholder="Description" 
+        rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="startDate" class="form-label">Start Date</label>
+      <div class="input-group">
+        <input 
+          type="date"
+          id="startDate"
+          class="form-control"
+          placeholder="Start Date"
+          [min]="minDate | date:'yyyy-MM-dd'"
+          [(ngModel)]="tripModel.startDate"
+          (change)="onStartDateChange($event)"
+          name="startDate"
+          required>
+      </div>
+      <div *ngIf="validationErrors.startDate" class="text-danger">{{validationErrors.startDate}}</div>
+    </div>
+    <div class="mb-3">
+      <label for="endDate" class="form-label">End Date</label>
+      <div class="input-group">
+        <input 
+          type="date"
+          id="endDate"
+          class="form-control"
+          placeholder="End Date"
+          [min]="tripModel.startDate || (minDate | date:'yyyy-MM-dd')"
+          [(ngModel)]="tripModel.endDate"
+          name="endDate"
+          required>
+      </div>
+      <div *ngIf="validationErrors.endDate" class="text-danger">{{validationErrors.endDate}}</div>
+    </div>
+    <input type="hidden" [(ngModel)]="tripModel.latitude" name="latitude" />
+    <input type="hidden" [(ngModel)]="tripModel.longitude" name="longitude" />
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        {{isSubmitting ? 'Creating...' : 'Create Trip'}}
+      </button>
+    </div>
+  </form>
+</div>

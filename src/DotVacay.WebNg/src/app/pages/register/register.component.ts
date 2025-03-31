@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink, CommonModule],
+  imports: [FormsModule, RouterModule, CommonModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -18,6 +18,7 @@ export class RegisterComponent {
   password: string = '';
   confirmPassword: string = '';
   errorMessage: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -31,6 +32,9 @@ export class RegisterComponent {
       return;
     }
 
+    this.isLoading = true;
+    this.errorMessage = '';
+
     this.authService.register({
       firstName: this.firstName,
       lastName: this.lastName,
@@ -42,6 +46,7 @@ export class RegisterComponent {
         this.router.navigate(['/trips']); // Redirect to trips page instead of /app
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Registration failed', error);
         this.errorMessage = error.error?.errors?.[0] || 'Something went wrong!';
       }

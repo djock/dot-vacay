@@ -1,4 +1,4 @@
-<app-header ></app-header>
+<app-header></app-header>
 
 <div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
 <div *ngIf="successMessage" class="alert alert-success text-center">{{ successMessage }}</div>
@@ -6,7 +6,7 @@
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0">My Trips</h3>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTripModal">
+    <button type="button" class="btn btn-primary" (click)="openCreateTripModal()">
       <i class="bi bi-plus"></i> Plan new trip
     </button>
   </div>
@@ -49,7 +49,7 @@
 </div>
 
 <!-- Create Trip Modal -->
-<div class="modal fade" id="createTripModal" tabindex="-1" aria-labelledby="createTripModalLabel" aria-hidden="true">
+<div class="modal fade" #createTripModal id="createTripModal" tabindex="-1" aria-labelledby="createTripModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -57,36 +57,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form (ngSubmit)="onSubmit()">
-          <div class="mb-3">
-            <label for="title" class="form-label">Trip Title</label>
-            <input type="text" class="form-control" id="title" name="title" [(ngModel)]="createTrip.title" required>
-          </div>
-          <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3" [(ngModel)]="createTrip.description"></textarea>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" class="form-control" id="startDate" name="startDate" [(ngModel)]="createTrip.startDate" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input type="date" class="form-control" id="endDate" name="endDate" [(ngModel)]="createTrip.endDate" required>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="location" class="form-label">Location</label>
-            <input type="text" class="form-control" id="location" name="location" [(ngModel)]="createTrip.location" required>
-            <input type="hidden" name="latitude" [(ngModel)]="createTrip.latitude">
-            <input type="hidden" name="longitude" [(ngModel)]="createTrip.longitude">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Create Trip</button>
-          </div>
-        </form>
+        <edit-trip-modal (tripCreated)="onTripCreated($event)"></edit-trip-modal>
       </div>
     </div>
   </div>

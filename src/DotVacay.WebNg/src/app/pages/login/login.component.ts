@@ -15,6 +15,7 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
   errorMessage: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -22,6 +23,9 @@ export class LoginComponent {
   ) {}
 
   onSubmit() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
     this.authService.login({
       email: this.email,
       password: this.password
@@ -30,6 +34,7 @@ export class LoginComponent {
         this.router.navigate(['/trips']); 
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Login failed', error);
         this.errorMessage = error.error?.errors?.[0] || 'Something went wrong!';
       }
