@@ -7,13 +7,13 @@ import { TripService } from '../../services/trip.service';
 import { SearchOsmService, LocationResult } from '../../services/search-osm.service';
 
 @Component({
-  selector: 'edit-trip-modal',
+  selector: 'edit-poi-modal',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: './edit-trip-modal.component.html',
-  styleUrls: ['./edit-trip-modal.component.css']
+  templateUrl: './edit-poi-modal.component.html',
+  styleUrls: ['./edit-poi-modal.component.css']
 })
-export class EditTripModal implements OnInit {
+export class EditPoiModal implements OnInit {
   tripModel: EditTripModel = new EditTripModel();
   validationErrors: any = {};
   isSubmitting: boolean = false;

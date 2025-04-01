@@ -1,4 +1,4 @@
-export class CreateTripModel {
+export class EditTripModel {
   title: string = '';
   description: string = '';
   startDate: string = '';

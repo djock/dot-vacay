@@ -11,53 +11,90 @@
   </div>
 </div>
 
-<div class="container mt-5" *ngIf="!loading && trip">
-  <div class="row">
-    <div class="col-md-8">
-      <h2>{{ trip.title }}</h2>
-      <p class="text-muted">
-        {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
-      </p>
-      <p>{{ trip.description }}</p>
-    </div>
-    <div class="col-md-4 text-end">
-      <div class="d-flex justify-content-end gap-2">
-        <a routerLink="/trips" class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-left"></i> Back to Trips
-        </a>
-        <button *ngIf="trip.isOwner" class="btn btn-danger" (click)="deleteTrip()">
-          <i class="bi bi-trash"></i>
-        </button>
-        <button *ngIf="!trip.isOwner" class="btn btn-warning" (click)="leaveTrip()">
-          <i class="bi bi-box-arrow-right"></i>
-        </button>
-      </div>
-    </div>
+<div class="position-relative">
+  <div class="trip-banner" style="height: 400px; overflow: hidden; position: relative;">
+    <img src="https://picsum.photos/seed/{{trip?.id}}/1920/1080" class="w-100 h-100" style="object-fit: cover;" alt="Trip Banner">
+    <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);"></div>
   </div>
 
-  <!-- Points of Interest -->
-  <div class="mt-5" *ngIf="trip.pointsOfInterest && trip.pointsOfInterest.length > 0">
-    <h3>Itinerary</h3>
-    <div class="timeline mt-4">
-      <div class="timeline-item mb-4" *ngFor="let poi of trip.pointsOfInterest">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">{{ poi.title }}</h5>
-            <p class="card-text">{{ poi.description }}</p>
-            <p class="card-text">
-              <small class="text-muted">
-                {{ poi.startDate | date:'medium' }} - {{ poi.endDate | date:'medium' }}
-              </small>
-            </p>
+  <div class="container position-absolute" style="bottom: -80px; left: 0; right: 0; z-index: 10;" *ngIf="!loading && trip">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-white p-4 shadow-sm rounded">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">{{ trip.title }}</h2>
+            <div class="d-flex gap-2">
+              <a routerLink="/trips" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Trips
+              </a>
+              <button *ngIf="trip.isOwner" class="btn btn-danger" (click)="deleteTrip()">
+                <i class="bi bi-trash"></i>
+              </button>
+              <button *ngIf="!trip.isOwner" class="btn btn-warning" (click)="leaveTrip()">
+                <i class="bi bi-box-arrow-right"></i>
+              </button>
+            </div>
           </div>
+          <p class="text-muted">
+            {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
+          </p>
+          <p>{{ trip.description }}</p>
         </div>
       </div>
     </div>
   </div>
-  
-  <div class="mt-5" *ngIf="!trip.pointsOfInterest || trip.pointsOfInterest.length === 0">
-    <div class="alert alert-info">
-      No points of interest added to this trip yet.
+</div>
+
+<!-- Add margin to push down the content that follows -->
+<div style="margin-top: 100px;"></div>
+
+<!-- Daily Itinerary -->
+<div class="container mt-5" *ngIf="!loading && trip">
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-3">Daily Itinerary</h3>
+        
+      <div *ngFor="let day of tripDays">
+        <app-trip-day 
+          [currentDate]="day" 
+          [pointsOfInterest]="getPointsOfInterestForDay(day)"
+          [tripId]="tripId"
+          (onAddPoi)="openAddPoiModal($event)"
+          (onEditPoi)="openEditPoiModal($event)"
+          (onDeletePoi)="deletePointOfInterest($event)">
+        </app-trip-day>
+      </div>
+        
+      <div *ngIf="tripDays.length === 0" class="alert alert-info">
+        No dates available for this trip. Please set start and end dates.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #editTripModal id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTripModalLabel">Plan New Trip</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <edit-poi-modal (tripCreated)="onSubmitPoiEdit($event.success)"></edit-poi-modal>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" #editTripModal id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTripModalLabel">Plan New Trip</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <edit-poi-modal (tripCreated)="onSubmitPoiEdit($event.success)"></edit-poi-modal>
+      </div>
     </div>
   </div>
 </div>

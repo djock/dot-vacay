@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { TripListItemModel } from '../models/trip-list-item.model';
-import { CreateTripModel } from '../models/create-trip.model';
+import { EditTripModel } from '../models/create-trip.model';
 
 interface TripsListResult {
   success: boolean;
@@ -31,7 +31,7 @@ export class TripService {
     return this.apiService.get<TripsListResult>('/Trip/getAll');
   }
 
-  createTrip(tripData: CreateTripModel): Observable<TripIdResult> {
+  createTrip(tripData: EditTripModel): Observable<TripIdResult> {
     return this.apiService.post<TripIdResult>('/Trip/create', tripData);
   }
 
@@ -45,5 +45,9 @@ export class TripService {
 
   getTripById(tripId: string): Observable<any> {
     return this.apiService.get<any>(`/Trip/getById/${tripId}`);
+  }
+
+  deletePointOfInterest(poiId: string): Observable<RequestResult> {
+    return this.apiService.delete<RequestResult>(`/PointOfInterest/delete/${poiId}`);
   }
 }

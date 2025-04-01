@@ -4,7 +4,7 @@
     "DotNetVacay.API": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
       "applicationUrl": "http://0.0.0.0:5111",
       "environmentVariables": {
@@ -14,7 +14,7 @@
     "DotNetVacay.API secure": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
       "applicationUrl": "https://0.0.0.0:7229;http://0.0.0.0:5111",
       "environmentVariables": {

@@ -6,7 +6,7 @@
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0">My Trips</h3>
-    <button type="button" class="btn btn-primary" (click)="openCreateTripModal()">
+    <button type="button" class="btn btn-primary" (click)="openEditTripModal()">
       <i class="bi bi-plus"></i> Plan new trip
     </button>
   </div>
@@ -14,27 +14,7 @@
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     <ng-container *ngIf="trips.length > 0; else noTrips">
       <div class="col" *ngFor="let trip of trips">
-        <div class="card h-100">
-          <a [routerLink]="['/trip', trip.id]" class="text-decoration-none text-dark">
-            <div class="position-relative">
-              <img src="https://picsum.photos/seed/{{trip.id}}/800/400" class="card-img-top" alt="{{trip.title}}" style="height: 200px; object-fit: cover;">
-              <div *ngIf="trip.isOwner" class="position-absolute top-0 end-0 m-2">
-                <button type="button" class="btn btn-danger" (click)="deleteTrip(trip.id); $event.stopPropagation();">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">{{trip.title}}</h5>
-              <p class="card-text">{{trip.description}}</p>
-              <p class="card-text">
-                <small class="text-muted">
-                  {{trip.startDate | date:'mediumDate'}} - {{trip.endDate | date:'mediumDate'}}
-                </small>
-              </p>
-            </div>
-          </a>
-        </div>
+        <trip-list-item [trip] ="trip" (onDeleteTrip)="onDeleteTrip($event)"></trip-list-item>
       </div>
     </ng-container>
     
@@ -48,12 +28,11 @@
   </div>
 </div>
 
-<!-- Create Trip Modal -->
-<div class="modal fade" #createTripModal id="createTripModal" tabindex="-1" aria-labelledby="createTripModalLabel" aria-hidden="true">
+<div class="modal fade" #editTripModal id="editTripModal" tabindex="-1" aria-labelledby="editTripModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="createTripModalLabel">Plan New Trip</h5>
+        <h5 class="modal-title" id="editTripModalLabel">Plan New Trip</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
