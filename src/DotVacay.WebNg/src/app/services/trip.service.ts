@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { TripListItemModel } from '../models/trip-list-item.model';
 import { EditTripModel } from '../models/create-trip.model';
+import { EditPoiModel } from '../models/edit-poi.model';
 
 interface TripsListResult {
   success: boolean;
@@ -49,5 +50,13 @@ export class TripService {
 
   deletePointOfInterest(poiId: string): Observable<RequestResult> {
     return this.apiService.delete<RequestResult>(`/PointOfInterest/delete/${poiId}`);
+  }
+
+  createOrUpdatePoi(poiModel: EditPoiModel, isNew: boolean): Observable<any> {
+    if (isNew) {
+      return this.apiService.post<any>('/PointOfInterest/create', poiModel);
+    } else {
+      return this.apiService.put<any>(`/PointOfInterest/update/${poiModel.tripId}`, poiModel);
+    }
   }
 }

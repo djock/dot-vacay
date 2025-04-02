@@ -14,11 +14,12 @@ export class TripListItemComponent implements OnInit {
 
   constructor(private tripService: TripService) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+  }
 
-  deleteTrip(tripId: string): void {
+  deleteTrip(): void {
     if (confirm('Are you sure you want to delete this trip?')) {
-      this.tripService.deleteTrip(tripId).subscribe({
+      this.tripService.deleteTrip(this.trip.tripId).subscribe({
         next: (result) => {
           this.onDeleteTrip.emit(result.success);
         },

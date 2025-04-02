@@ -1,32 +1,39 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { EditTripModel } from '../../models/create-trip.model';
 import { TripService } from '../../services/trip.service';
 import { SearchOsmService, LocationResult } from '../../services/search-osm.service';
+import { EditPoiModel } from '../../models/edit-poi.model';
+import { PointOfInterest } from '../../models/point-of-interest.model';
+import { PointOfInterestType } from '../../enums/point-of-interest-type-enum';
 
 @Component({
   selector: 'edit-poi-modal',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './edit-poi-modal.component.html',
-  styleUrls: ['./edit-poi-modal.component.css']
+  styleUrls: ['./edit-poi-modal.component.css'] 
 })
-export class EditPoiModal implements OnInit {
-  tripModel: EditTripModel = new EditTripModel();
+export class EditPoiModal implements OnInit, OnChanges {
+  poiModel: EditPoiModel = new EditPoiModel();
   validationErrors: any = {};
   isSubmitting: boolean = false;
   minDate = new Date();
+  isEditMode: boolean = false;
   
-  // Location search properties
   locations: LocationResult[] = [];
   searchQuery: string = '';
   showDropdown: boolean = false;
   isLoading: boolean = false;
   debounceTimer: any;
 
-  @Output() tripCreated = new EventEmitter<any>();
+  @Input() tripId: string = '';
+  @Input() selectedDate: Date | null = null;
+  @Input() poiToEdit: PointOfInterest | null = null;
+  
+  @Output() onEditPoi = new EventEmitter<any>();
+  @Output() onClose = new EventEmitter<any>();
 
   constructor(
     private searchOsmService: SearchOsmService,
@@ -51,22 +58,73 @@ export class EditPoiModal implements OnInit {
     });
   }
 
-  setDefaultDates(): void {
-    // Format current date for date input
-    const formatDate = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
+  ngOnChanges(changes: SimpleChanges): void {
+    // When poiToEdit changes, update the form
+    if (changes['poiToEdit'] && changes['poiToEdit'].currentValue) {
+      this.isEditMode = true;
+      const poi = changes['poiToEdit'].currentValue;
+      this.poiModel = new EditPoiModel();
+      
+      // Map POI fields to form model
+      this.poiModel.id = poi.id;
+      this.poiModel.tripId = poi.tripId || this.tripId;
+      this.poiModel.title = poi.title;
+      this.poiModel.description = poi.description || '';
+      this.poiModel.latitude = poi.latitude;
+      this.poiModel.longitude = poi.longitude;
+      this.poiModel.type = poi.type || PointOfInterestType.Accomodation;
+      
+      // Format dates for the form
+      if (poi.startDate) {
+        this.poiModel.startDate = this.formatDateForInput(new Date(poi.startDate));
+      }
+      if (poi.endDate) {
+        this.poiModel.endDate = this.formatDateForInput(new Date(poi.endDate));
+      }
+    } else if (changes['selectedDate'] && changes['selectedDate'].currentValue) {
+      // For new POI with selected date
+      this.isEditMode = false;
+      this.poiModel = new EditPoiModel();
+      
+      if (this.tripId) {
+        this.poiModel.tripId = this.tripId;
+      }
+      
+      // Set default dates based on the selected date
+      const selectedDate = new Date(changes['selectedDate'].currentValue);
+      this.poiModel.startDate = this.formatDateForInput(selectedDate);
+      
+      const endDate = new Date(selectedDate);
+      endDate.setHours(selectedDate.getHours() + 1); // Default duration: 1 hour
+      this.poiModel.endDate = this.formatDateForInput(endDate);
+    }
+  }
 
-    // Set default dates
-    const now = new Date();
-    this.tripModel.startDate = formatDate(now);
-    
-    const endDate = new Date(now);
-    endDate.setDate(endDate.getDate() + 3); // Default trip length is 3 days
-    this.tripModel.endDate = formatDate(endDate);
+  formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  setDefaultDates(): void {
+    if (!this.poiModel.startDate && !this.selectedDate) {
+      // Format current date for date input
+      const formatDate = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      // Set default dates
+      const now = new Date();
+      this.poiModel.startDate = formatDate(now);
+      
+      const endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 1); // Default trip length is 1 day
+      this.poiModel.endDate = formatDate(endDate);
+    }
   }
 
   onStartDateChange(event: Event): void {
@@ -74,10 +132,10 @@ export class EditPoiModal implements OnInit {
     const newStartDate = input.value;
     
     // If end date is before start date, update it
-    if (this.tripModel.endDate && this.tripModel.endDate < newStartDate) {
+    if (this.poiModel.endDate && this.poiModel.endDate < newStartDate) {
       const startDate = new Date(newStartDate);
       const newEndDate = new Date(startDate);
-      newEndDate.setDate(newEndDate.getDate() + 3);
+      newEndDate.setDate(newEndDate.getDate() + 1);
       
       const formatDate = (date: Date): string => {
         const year = date.getFullYear();
@@ -86,7 +144,7 @@ export class EditPoiModal implements OnInit {
         return `${year}-${month}-${day}`;
       };
       
-      this.tripModel.endDate = formatDate(newEndDate);
+      this.poiModel.endDate = formatDate(newEndDate);
     }
     
     // Automatically open the end date calendar after a short delay
@@ -132,9 +190,9 @@ export class EditPoiModal implements OnInit {
   }
 
   selectLocation(location: LocationResult): void {
-    this.tripModel.title = location.display_name.split(',')[0];
-    this.tripModel.latitude = parseFloat(location.lat);
-    this.tripModel.longitude = parseFloat(location.lon);
+    this.poiModel.title = location.display_name.split(',')[0];
+    this.poiModel.latitude = parseFloat(location.lat);
+    this.poiModel.longitude = parseFloat(location.lon);
     this.showDropdown = false;
   }
 
@@ -142,13 +200,13 @@ export class EditPoiModal implements OnInit {
     this.validationErrors = {};
     
     // Basic validation
-    if (!this.tripModel.title) {
+    if (!this.poiModel.title) {
       this.validationErrors.title = 'Location is required';
     }
-    if (!this.tripModel.startDate) {
+    if (!this.poiModel.startDate) {
       this.validationErrors.startDate = 'Start date is required';
     }
-    if (!this.tripModel.endDate) {
+    if (!this.poiModel.endDate) {
       this.validationErrors.endDate = 'End date is required';
     }
     
@@ -159,24 +217,27 @@ export class EditPoiModal implements OnInit {
     
     this.isSubmitting = true;
     
-    this.tripService.createTrip(this.tripModel).subscribe({
+    if (this.tripId) {
+      this.poiModel.tripId = this.tripId;
+    }
+    
+    // Use createOrUpdatePoi method to handle both create and update
+    this.tripService.createOrUpdatePoi(this.poiModel, this.isEditMode).subscribe({
       next: (result) => {
         this.isSubmitting = false;
         if (result.success) {
-          this.tripCreated.emit(result);
+          this.onEditPoi.emit(result);
           // Reset form
-          this.tripModel = new EditTripModel();
+          this.poiModel = new EditPoiModel();
           this.setDefaultDates();
-          // Navigate to trips list or emit event to parent
-          this.router.navigate(['/trips']);
         } else if (result.errors?.length) {
           this.validationErrors.general = result.errors[0];
         }
       },
       error: (error) => {
         this.isSubmitting = false;
-        console.error('Failed to create trip', error);
-        this.validationErrors.general = error.error?.errors?.[0] || 'Failed to create trip';
+        console.error('Failed to save point of interest', error);
+        this.validationErrors.general = error.error?.errors?.[0] || 'Failed to save point of interest';
       }
     });
   }

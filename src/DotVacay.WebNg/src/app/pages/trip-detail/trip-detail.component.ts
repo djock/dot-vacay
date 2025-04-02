@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
@@ -8,8 +8,10 @@ import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.com
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
 
+declare var bootstrap: any;
+
 @Component({
-  selector: 'app-trip-detail',
+  selector: 'trip-detail',
   standalone: true,
   imports: [
     CommonModule, 
@@ -29,17 +31,26 @@ export class TripDetailComponent implements OnInit {
   successMessage: string = '';
   loading: boolean = true;
   tripDays: Date[] = [];
-  selectedDate: Date | null = null;
-  selectedPoi: PointOfInterest | null = null;
+  private modalInstance: any;
 
   constructor(private route: ActivatedRoute,
     private router: Router, private tripService: TripService
   ) { }
+
+  @ViewChild('editPoiModal') editPoiModal!: ElementRef;
+
+
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tripId = params['id'];
       this.loadTripDetails();
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.editPoiModal) {
+      this.modalInstance = new bootstrap.Modal(this.editPoiModal.nativeElement);
+    }
   }
 
   loadTripDetails(): void {
@@ -89,57 +100,49 @@ export class TripDetailComponent implements OnInit {
     
     return this.trip.pointsOfInterest.filter((poi: PointOfInterest) => {
       if (!poi.startDate || !poi.endDate) {
-        return false;
+        return false; // Skip POIs without dates
       }
       
       const poiStartDate = new Date(poi.startDate);
       const poiEndDate = new Date(poi.endDate);
-      
+
       return (
-        (poiStartDate >= dayStart && poiStartDate <= dayEnd) || 
-        (poiEndDate >= dayStart && poiEndDate <= dayEnd) ||
-        (poiStartDate <= dayStart && poiEndDate >= dayEnd)
+        (poiStartDate >= dayStart && poiStartDate <= dayEnd) || // POI starts on this day
+        (poiEndDate >= dayStart && poiEndDate <= dayEnd) ||     // POI ends on this day
+        (poiStartDate <= dayStart && poiEndDate >= dayEnd)      // POI spans over this day
       );
     });
   }
 
   openAddPoiModal(date: Date): void {
-    this.selectedDate = date;
-    this.selectedPoi = null;
-    // Logic to open the modal will depend on your implementation
-    // For example, you might set a boolean flag to show the modal
+    if (this.modalInstance) {
+      this.modalInstance.show();
+    }
   }
 
   openEditPoiModal(poi: PointOfInterest): void {
-    this.selectedPoi = poi;
-    // Logic to open the modal will depend on your implementation
+    if (this.modalInstance) {
+      this.modalInstance.show();
+    }
+  }
+
+  closeEditTripModal(): void {
+    if (this.modalInstance) {
+      this.modalInstance.hide();
+    }
   }
 
   deletePointOfInterest(poi: PointOfInterest): void {
-    this.tripService.deletePointOfInterest(poi.id).subscribe({
-      next: (result: any) => {
-        if (result.success) {
-          this.successMessage = 'Point of interest deleted successfully';
-          setTimeout(() => this.successMessage = '', 3000);
-          this.loadTripDetails();
-        } else if (result.errors?.length) {
-          this.errorMessage = result.errors[0];
-        }
-      },
-      error: (error: any) => {
-        console.error('Failed to delete point of interest', error);
-        this.errorMessage = error.error?.errors?.[0] || 'Failed to delete point of interest';
-      }
-    });
+    if (confirm('Are you sure you want to delete this point of interest?')) {
+      console.log('delete');
+    }
   }
 
-  onSubmitPoiEdit(success: boolean): void {
+  onPoiSaved(success: boolean): void {
     if (success) {
       this.loadTripDetails();
       this.successMessage = 'Point of interest saved successfully';
       setTimeout(() => this.successMessage = '', 3000);
-      this.selectedPoi = null;
-      this.selectedDate = null;
     }
   }
 
@@ -177,5 +180,16 @@ export class TripDetailComponent implements OnInit {
         }
       });
     }
+  }
+
+  onPoiCreated(result: any): void {
+    this.successMessage = 'Trip created successfully!';
+    this.loadTripDetails(); 
+    this.closeEditTripModal(); 
+
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 5000);
   }
 }

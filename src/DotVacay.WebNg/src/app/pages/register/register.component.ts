@@ -42,12 +42,10 @@ export class RegisterComponent {
       password: this.password
     }).subscribe({
       next: (response) => {
-        console.log('Registration successful', response);
-        this.router.navigate(['/trips']); // Redirect to trips page instead of /app
+        this.router.navigate(['/trips']); 
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Registration failed', error);
         this.errorMessage = error.error?.errors?.[0] || 'Something went wrong!';
       }
     });

@@ -1,14 +1,15 @@
-<div class="container mt-3 mb-3" style="max-width:400px; margin:auto;">
+<div class="container mt-2 mb-2" style="max-width:400px; margin:auto;">
   <form (ngSubmit)="onSubmit()">
+    <input type="hidden" [(ngModel)]="poiModel.tripId" name="tripId" />
     <label for="locationInput" class="form-label">Location</label>
     <div class="form-floating mb-3">
       <div class="position-relative">
-        <input type="text"
-               id="locationInput"
-               [(ngModel)]="tripModel.title"
+        <input type="text" 
+               id="locationInput" 
+               [(ngModel)]="poiModel.title"
                name="title"
-               class="form-control"
-               placeholder="Search for a location..."
+               class="form-control" 
+               placeholder="Search for a location..." 
                autocomplete="off"
                (input)="onLocationInput($event)"
                required />
@@ -25,53 +26,65 @@
       </div>
       <div *ngIf="validationErrors.title" class="text-danger">{{validationErrors.title}}</div>
     </div>
+    <input type="hidden" [(ngModel)]="poiModel.latitude" name="latitude" />
+    <input type="hidden" [(ngModel)]="poiModel.longitude" name="longitude" />
     <div class="mb-3">
       <label for="description" class="form-label">Description</label>
       <textarea 
         id="description"
-        [(ngModel)]="tripModel.description" 
+        [(ngModel)]="poiModel.description" 
         name="description" 
         class="form-control" 
         placeholder="Description" 
         rows="3"></textarea>
     </div>
     <div class="mb-3">
-      <label for="startDate" class="form-label">Start Date</label>
-      <div class="input-group">
-        <input 
-          type="date"
-          id="startDate"
-          class="form-control"
-          placeholder="Start Date"
-          [min]="minDate | date:'yyyy-MM-dd'"
-          [(ngModel)]="tripModel.startDate"
-          (change)="onStartDateChange($event)"
-          name="startDate"
-          required>
-      </div>
+      <label for="type" class="form-label">Type</label>
+      <select 
+        id="type"
+        [(ngModel)]="poiModel.type" 
+        name="type" 
+        class="form-control" 
+        required>
+        <option [ngValue]="0">Accommodation</option>
+        <option [ngValue]="1">Restaurant</option>
+        <option [ngValue]="2">Attraction</option>
+        <option [ngValue]="3">Transportation</option>
+        <option [ngValue]="4">Other</option>
+      </select>
+      <div *ngIf="validationErrors.type" class="text-danger">{{validationErrors.type}}</div>
+    </div>
+    <div class="mb-3">
+      <label for="startDate" class="form-label">Start Time</label>
+      <input 
+        type="date"
+        id="startDate"
+        class="form-control"
+        placeholder="Start Date"
+        [min]="minDate | date:'yyyy-MM-dd'"
+        [(ngModel)]="poiModel.startDate"
+        (change)="onStartDateChange($event)"
+        name="startDate"
+        required>
       <div *ngIf="validationErrors.startDate" class="text-danger">{{validationErrors.startDate}}</div>
     </div>
     <div class="mb-3">
-      <label for="endDate" class="form-label">End Date</label>
-      <div class="input-group">
-        <input 
-          type="date"
-          id="endDate"
-          class="form-control"
-          placeholder="End Date"
-          [min]="tripModel.startDate || (minDate | date:'yyyy-MM-dd')"
-          [(ngModel)]="tripModel.endDate"
-          name="endDate"
-          required>
-      </div>
+      <label for="endDate" class="form-label">End Time</label>
+      <input 
+        type="date"
+        id="endDate"
+        class="form-control"
+        placeholder="End Date"
+        [min]="poiModel.startDate || (minDate | date:'yyyy-MM-dd')"
+        [(ngModel)]="poiModel.endDate"
+        name="endDate"
+        required>
       <div *ngIf="validationErrors.endDate" class="text-danger">{{validationErrors.endDate}}</div>
     </div>
-    <input type="hidden" [(ngModel)]="tripModel.latitude" name="latitude" />
-    <input type="hidden" [(ngModel)]="tripModel.longitude" name="longitude" />
     <div class="text-end">
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
         <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        {{isSubmitting ? 'Creating...' : 'Create Trip'}}
+        {{isSubmitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create')}}
       </button>
     </div>
   </form>

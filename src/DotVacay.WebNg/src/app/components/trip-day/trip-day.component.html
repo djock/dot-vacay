@@ -1,66 +1,21 @@
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
-
-<div class="card mb-4 shadow-sm">
-  <div class="card-header bg-white">
-    <div class="d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">{{ currentDate | date:'EEEE, MMMM d' }}</h5>
-      <div>
-        <button type="button" class="btn btn-primary btn-sm" (click)="addPointOfInterest()">
-          <i class="bi bi-plus"></i> Add Point of Interest
-        </button>
-      </div>
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ currentDate | date:'fullDate' }}</h5>
+    <button class="btn btn-primary btn-sm" (click)="openAddPoiModal()">
+      <i class="bi bi-plus"></i> Add Point of Interest
+    </button>
+  </div>
+  
+  <div class="card-body">
+    <div *ngIf="pointsOfInterest.length === 0" class="text-center text-muted py-3">
+      No points of interest for this day. Click "Add Point of Interest" to get started.
+    </div>
+    
+    <div *ngFor="let poi of pointsOfInterest" class="mb-3 p-3 border rounded">
+        <poi-list-item
+          [poi]="poi"
+          (onRefresh)="refreshData()">
+        </poi-list-item>
     </div>
   </div>
-  <div class="card-body">
-    <ng-container *ngIf="pointsOfInterest.length > 0; else noPois">
-      <div class="timeline">
-        <div class="timeline-item mb-3" *ngFor="let poi of pointsOfInterest">
-          <div class="card">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <h5 class="card-title">{{ poi.title }}</h5>
-                  <p class="card-text" *ngIf="poi.description">{{ poi.description }}</p>
-                  <p class="card-text">
-                    <small class="text-muted">
-                      {{ poi.startDate | date:'shortTime' }} - {{ poi.endDate | date:'shortTime' }}
-                    </small>
-                  </p>
-                  <a *ngIf="poi.latitude && poi.longitude" 
-                     href="https://www.google.com/maps?q={{poi.latitude}},{{poi.longitude}}" 
-                     target="_blank" 
-                     class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-geo-alt"></i> View on Map
-                  </a>
-                </div>
-                <div>
-                  <button class="btn btn-sm btn-outline-primary me-2" (click)="editPointOfInterest(poi)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="deletePointOfInterest(poi)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-    <ng-template #noPois>
-      <div class="text-center text-muted py-3">
-        <p class="mb-0">No points of interest added for this day.</p>
-      </div>
-    </ng-template>
-  </div>
 </div>
-
-</body>
-</html>

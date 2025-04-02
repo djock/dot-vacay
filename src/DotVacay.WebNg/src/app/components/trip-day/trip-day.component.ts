@@ -1,28 +1,34 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { PointOfInterest } from '../../models/point-of-interest.model';
+import { PoiListItemComponent } from '../../components/poi-list-item/poi-list-item.component';
+import { ActivatedRoute } from '@angular/router';
 
-@Component({  selector: 'app-trip-day',
-  standalone: true,  imports: [CommonModule],
-  templateUrl: './trip-day.component.html',  styleUrls: ['./trip-day.component.css']
+@Component({
+  selector: 'trip-day',
+  standalone: true,
+  imports: [CommonModule, PoiListItemComponent],
+  templateUrl: './trip-day.component.html',
+  styleUrls: ['./trip-day.component.css']
 })
+export class TripDayComponent implements OnInit  {
+  @Input() currentDate: Date = new Date();
+  @Input() pointsOfInterest: PointOfInterest[] = [];
+  
+  @Output() onAddPoi = new EventEmitter<Date>();
+  @Output() onRefresh = new EventEmitter<Date>();
 
-export class TripDayComponent {
-  @Input() currentDate: Date = new Date();  @Input() pointsOfInterest: PointOfInterest[] = [];
-  @Input() tripId: string = '';  
-  @Output() onAddPoi = new EventEmitter<Date>();  
-  @Output() onEditPoi = new EventEmitter<PointOfInterest>();
-  @Output() onDeletePoi = new EventEmitter<PointOfInterest>();
+  constructor(private route: ActivatedRoute) { }
 
-  addPointOfInterest(): void {    
-    this.onAddPoi.emit(this.currentDate);
+  ngOnInit(): void {
+    console.log('pois list: ' + this.pointsOfInterest);
   }
 
-  editPointOfInterest(poi: PointOfInterest): void {    
-    this.onEditPoi.emit(poi);
+  openAddPoiModal(): void {
+    this.onAddPoi.emit();
   }
 
-  deletePointOfInterest(poi: PointOfInterest): void {    
-    if (confirm('Are you sure you want to delete this point of interest?')) {
-      this.onDeletePoi.emit(poi);    }
+  refreshData(): void {
+    this.onRefresh.emit();
   }
 }

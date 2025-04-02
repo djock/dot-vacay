@@ -26,7 +26,7 @@ export class EditTripModal implements OnInit {
   isLoading: boolean = false;
   debounceTimer: any;
 
-  @Output() tripCreated = new EventEmitter<any>();
+  @Output() onEditTrip = new EventEmitter<any>();
 
   constructor(
     private searchOsmService: SearchOsmService,
@@ -163,7 +163,7 @@ export class EditTripModal implements OnInit {
       next: (result) => {
         this.isSubmitting = false;
         if (result.success) {
-          this.tripCreated.emit(result);
+          this.onEditTrip.emit(result);
           // Reset form
           this.tripModel = new EditTripModel();
           this.setDefaultDates();

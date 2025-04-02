@@ -12,7 +12,7 @@ import { TripListItemComponent } from "../../components/trip-list-item/trip-list
 declare var bootstrap: any;
 
 @Component({
-  selector: 'app-trips-list',
+  selector: 'trips-list',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, AppHeaderComponent, EditTripModal, TripListItemComponent],
   templateUrl: './trips-list.component.html',
@@ -21,14 +21,14 @@ declare var bootstrap: any;
 
 export class TripsListComponent implements OnInit {
   trips: TripListItemModel[] = [];
-  createTrip: EditTripModel = new EditTripModel();
+  onEditTrip: EditTripModel = new EditTripModel();
   errorMessage: string = '';
   successMessage: string = '';
   private modalInstance: any;
 
-  @ViewChild('editTripModal') editTripModalElement!: ElementRef;
-
   constructor(private tripService: TripService) {}
+
+  @ViewChild('editTripModal') editTripModalElement!: ElementRef;
 
   ngOnInit(): void {
     this.loadTrips();
