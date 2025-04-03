@@ -1,0 +1,63 @@
+<div class="timeline-item mb-3" *ngIf="poi">
+  <div class="d-flex align-items-start">
+    <!-- Left: Icon -->
+    <div class="timeline-icon me-3">
+      <div [ngSwitch]="poi.type">
+        <i *ngSwitchCase="PointOfInterestType.Accomodation" class="bi bi-building text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Transportation" class="bi bi-car-front text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Restaurant" class="bi bi-cup-hot text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Coffee" class="bi bi-cup-hot text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Museum" class="bi bi-geo-alt text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Landmark" class="bi bi-compass text-primary"></i>
+        <i *ngSwitchCase="PointOfInterestType.Shopping" class="bi bi-cart text-primary"></i>
+        <i *ngSwitchDefault class="bi bi-geo-alt text-primary"></i>
+      </div>
+    </div>
+
+    <!-- Middle: Content -->
+    <div class="timeline-content flex-grow-1">
+      <h6 class="mb-1">
+        {{ poi.title }}
+        <!-- For Accommodation type with special check-in/check-out display -->
+        <ng-container *ngIf="poi.type === PointOfInterestType.Accomodation && poi.startDate && poi.endDate">
+          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+            (Check in: {{ poi.startDate | date:'shortTime' }}, Check out: {{ poi.endDate | date:'shortTime' }})
+          </small>
+          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && !isEndDateInCurrentDay()">
+            (Check in: {{ poi.startDate | date:'shortTime' }})
+          </small>
+          <small class="text-muted ms-2" *ngIf="!isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+            (Check out: {{ poi.endDate | date:'shortTime' }})
+          </small>
+        </ng-container>
+        
+        <!-- For all other types, show regular time display -->
+        <small class="text-muted ms-2" *ngIf="poi.type !== PointOfInterestType.Accomodation && poi.startDate && poi.endDate && (isStartDateInCurrentDay() || isEndDateInCurrentDay())">
+          ({{ poi.startDate | date:'shortTime' }} - {{ poi.endDate | date:'shortTime' }})
+        </small>
+      </h6>
+      <p *ngIf="poi.description" class="mb-0 text-muted">{{ poi.description }}</p>
+      <div *ngIf="poi.latitude && poi.longitude && poi.latitude !== 0 && poi.longitude !== 0" class="mt-2">
+        <a [href]="'https://www.google.com/maps?q=' + poi.latitude + ',' + poi.longitude"
+           target="_blank"
+           class="text-decoration-none">
+          <i class="bi bi-geo-alt"></i> View on Map
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Buttons -->
+    <div class="d-flex gap-2 ms-auto">
+      <button type="button"
+              class="btn btn-sm btn-outline-primary edit-poi"
+              (click)="openEditPoiModal(); $event.stopPropagation()">
+        <i class="bi bi-pencil"></i>
+      </button>
+      <button type="button"
+              class="btn btn-sm btn-outline-danger"
+              (click)="deletePointOfInterest(); $event.stopPropagation()">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  </div>
+</div>

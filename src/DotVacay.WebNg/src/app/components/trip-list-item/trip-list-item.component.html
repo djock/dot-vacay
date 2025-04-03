@@ -1,0 +1,21 @@
+<div class="card h-100">
+  <a [routerLink]="['/trip', trip.id]" class="text-decoration-none text-dark">
+    <div class="position-relative">
+      <img src="https://picsum.photos/seed/{{trip.id}}/800/400" class="card-img-top" alt="{{trip.title}}" style="height: 200px; object-fit: cover;">
+      <div *ngIf="trip.isOwner" class="position-absolute top-0 end-0 m-2">
+        <button type="button" class="btn btn-danger" (click)="deleteTrip(); $event.stopPropagation();">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{trip.title}}</h5>
+      <p class="card-text">{{trip.description}}</p>
+      <p class="card-text">
+        <small class="text-muted">
+          {{trip.startDate | date:'mediumDate'}} - {{trip.endDate | date:'mediumDate'}}
+        </small>
+      </p>
+    </div>
+  </a>
+</div>

@@ -1,0 +1,92 @@
+<div class="container mt-2 mb-2" style="max-width:400px; margin:auto;">
+  <form (ngSubmit)="onSubmit()">
+    <input type="hidden" [(ngModel)]="poiModel.tripId" name="tripId" />
+    <label for="locationInput" class="form-label">Location</label>
+    <div class="form-floating mb-3">
+      <div class="position-relative">
+        <input type="text" 
+               id="locationInput" 
+               [(ngModel)]="poiModel.title"
+               name="title"
+               class="form-control" 
+               placeholder="Search for a location..." 
+               autocomplete="off"
+               (input)="onLocationInput($event)"
+               required />
+        <div id="locationDropdown" class="location-dropdown" [style.display]="showDropdown ? 'block' : 'none'">
+          <div *ngIf="isLoading" class="p-2">Loading...</div>
+          <div *ngIf="!isLoading && locations.length === 0 && searchQuery.length >= 2" class="p-2">No locations found</div>
+          <div *ngIf="!isLoading && locations.length > 0" class="location-options">
+            <div *ngFor="let location of locations" class="location-option" (click)="selectLocation(location)">
+              <div class="location-name">{{location.display_name.split(',')[0]}}</div>
+              <div class="location-details text-muted small">{{location.display_name.split(',').slice(1, 3).join(',')}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="validationErrors.title" class="text-danger">{{validationErrors.title}}</div>
+    </div>
+    <input type="hidden" [(ngModel)]="poiModel.latitude" name="latitude" />
+    <input type="hidden" [(ngModel)]="poiModel.longitude" name="longitude" />
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea 
+        id="description"
+        [(ngModel)]="poiModel.description" 
+        name="description" 
+        class="form-control" 
+        placeholder="Description" 
+        rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="type" class="form-label">Type</label>
+      <select id="type"
+              [(ngModel)]="poiModel.type"
+              name="type"
+              class="form-control"
+              required>
+        <option [ngValue]="0">Accommodation</option>
+        <option [ngValue]="1">Transportation</option>
+        <option [ngValue]="2">Restaurant</option>
+        <option [ngValue]="3">Coffee</option>
+        <option [ngValue]="4">Museum</option>
+        <option [ngValue]="5">Landmark</option>
+        <option [ngValue]="6">Shopping</option>
+      </select>
+      <div *ngIf="validationErrors.type" class="text-danger">{{validationErrors.type}}</div>
+    </div>
+    <div class="mb-3">
+      <label for="startDate" class="form-label">Start Time</label>
+      <input 
+        type="datetime-local"
+        id="startDate"
+        class="form-control"
+        placeholder="Start Date"
+        [min]="minDate | date:'yyyy-MM-dd'"
+        [(ngModel)]="poiModel.startDate"
+        (change)="onStartDateChange($event)"
+        name="startDate"
+        required>
+      <div *ngIf="validationErrors.startDate" class="text-danger">{{validationErrors.startDate}}</div>
+    </div>
+    <div class="mb-3">
+      <label for="endDate" class="form-label">End Time</label>
+      <input 
+        type="datetime-local"
+        id="endDate"
+        class="form-control"
+        placeholder="End Date"
+        [min]="poiModel.startDate || (minDate | date:'yyyy-MM-dd')"
+        [(ngModel)]="poiModel.endDate"
+        name="endDate"
+        required>
+      <div *ngIf="validationErrors.endDate" class="text-danger">{{validationErrors.endDate}}</div>
+    </div>
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        {{isSubmitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create')}}
+      </button>
+    </div>
+  </form>
+</div>

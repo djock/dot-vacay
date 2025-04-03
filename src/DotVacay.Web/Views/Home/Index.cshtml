@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<header class="header">
+    <div class="logo">
+        <a href="/Home/Index" class="link-primary link-offset-2 link-underline link-underline-opacity-0"><h3>DotVacay</h3></a>
+    </div>
+    <div class="auth-buttons">
+        <a href="/Registration/Login" class="btn btn-light">Log in</a>
+        <a href="/Registration/Register" class="btn btn-primary">Sign up</a>
+    </div>
+</header>
+
+<div class="text-center mt-5">
+
+    <h1>One app for all your travel planning needs</h1>
+    <p>Create detailed itineraries, explore user-shared guides, and manage your bookings seamlessly — all in one place.</p>
+
+    <div class="mt-4">
+        <a href="/Registration/Login" class="btn btn-primary btn-lg">Start planning</a>
+    </div>
+</div>
+
+<style>
+    h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    p {
+        font-size: 1.2rem;
+        color: #555;
+    }
+</style>

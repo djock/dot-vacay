@@ -1,0 +1,43 @@
+<app-header></app-header>
+
+<div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
+<div *ngIf="successMessage" class="alert alert-success text-center">{{ successMessage }}</div>
+
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">My Trips</h3>
+    <button type="button" class="btn btn-primary" (click)="openEditTripModal()">
+      <i class="bi bi-plus"></i> Plan new trip
+    </button>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <ng-container *ngIf="trips.length > 0; else noTrips">
+      <div class="col" *ngFor="let trip of trips">
+        <trip-list-item [trip] ="trip" (onDeleteTrip)="onDeleteTrip($event)"></trip-list-item>
+      </div>
+    </ng-container>
+    
+    <ng-template #noTrips>
+      <div class="col-12">
+        <div class="alert alert-info">
+          No trips available. Create your first trip to get started!
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<div class="modal fade" #editTripModal id="editTripModal" tabindex="-1" aria-labelledby="editTripModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTripModalLabel">Plan New Trip</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <edit-trip-modal (onEditTrip)="onTripCreated($event)"></edit-trip-modal>
+      </div>
+    </div>
+  </div>
+</div>

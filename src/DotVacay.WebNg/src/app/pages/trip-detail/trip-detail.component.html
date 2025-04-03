@@ -1,0 +1,90 @@
+<app-header></app-header>
+
+<div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
+<div *ngIf="successMessage" class="alert alert-success text-center">{{ successMessage }}</div>
+
+<div class="container mt-5" *ngIf="loading">
+  <div class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="position-relative">
+  <div class="trip-banner" style="height: 400px; overflow: hidden; position: relative;">
+    <img src="https://picsum.photos/seed/{{trip?.id}}/1920/1080" class="w-100 h-100" style="object-fit: cover;" alt="Trip Banner">
+    <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);"></div>
+  </div>
+
+  <div class="container position-absolute" style="bottom: -80px; left: 0; right: 0; z-index: 10;" *ngIf="!loading && trip">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-white p-4 shadow-sm rounded">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">{{ trip.title }}</h2>
+            <div class="d-flex gap-2">
+              <button *ngIf="userIsOwner" class="btn btn-danger" (click)="deleteTrip()">
+                <i class="bi bi-trash"></i>
+              </button>
+              <button *ngIf="!userIsOwner" class="btn btn-warning" (click)="leaveTrip()">
+                <i class="bi bi-box-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-muted">
+            {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
+          </p>
+          <p>{{ trip.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 100px;"></div>
+
+<!-- Daily Itinerary -->
+<div class="container mt-5" *ngIf="!loading && trip">
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-3">Daily Itinerary</h3>
+        
+      <div *ngFor="let day of tripDays">
+        <trip-day 
+          [currentDate]="day" 
+          [pointsOfInterest]="getPointsOfInterestForDay(day)"
+          (onAddPoi)="openAddPoiModal($event)"
+          (onRefresh)="loadTripDetails()"
+          (onEditPoi)="openEditPoiModal($event)">
+        </trip-day>
+      </div>
+        
+      <div *ngIf="tripDays.length === 0" class="alert alert-info">
+        No dates available for this trip. Please set start and end dates.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #editPoiModal id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPoiModalLabel">
+          {{ selectedPoi ? 'Edit Point of Interest' : 'Add Point of Interest' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <edit-poi-modal 
+          [tripId]="tripId" 
+          [selectedDate]="selectedDate" 
+          [poiToEdit]="selectedPoi" 
+          (onEditPoi)="onPoiSaved($event)" 
+          (onClose)="closeEditTripModal()">
+        </edit-poi-modal>
+      </div>
+    </div>
+  </div>
+  </div>

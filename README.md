@@ -26,81 +26,103 @@ DotVacay is a web application designed to help travelers plan and organize their
   - All-day event support
   - Easy addition of new POIs to specific days
 
+- **Location Search**
+  - OpenStreetMap integration for location search
+  - Geocoding support for addresses and points of interest
+  - Interactive map display
 
 ## Technology Stack
 
 - **Backend**
-  - .NET Core Web API
+  - .NET 9.0 Web API
   - Entity Framework Core
   - SQL Server Database
   - JWT Authentication
 
 - **Frontend**
-  - ASP.NET Core MVC
+  - Angular 19
   - Bootstrap 5
-  - jQuery
-  - Bootstrap Icons
+  - ngx-bootstrap
+  - OpenStreetMap API integration
 
 ## Project Structure
 
 ```
 DotVacay/
-├── DotVacay.API/              # Web API Project
-│   └── Controllers           # API Controllers
-│
-├── DotVacay.Application/     # Application Services
-│   ├── DTOs/                # Application DTOs
-│   └── Services/            # Business Logic Services
-│
-├── DotVacay.Core/             # Core Business Logic
-│   ├── Entities/             # Domain Entities
-│   ├── Enums/               # Enumerations
-│   ├── Interfaces/              # Repositories and Services 
-│   └── Models/             # Dtos and Request /Result models
-
-├── DotVacay.Infrastructure/   # Data Access & External Services
-│   ├── Data/                # Database Context
-│   └── Repositories/        # Data Access Layer
-└── DotVacay.Web/            # Web Application
-    ├── Controllers/         # MVC Controllers
-    ├── Models/             # View Models
-    ├── Views/              # Razor Views
-    │   ├── Trip/
-    │   ├── PointOfInterest/
-    │   └── Shared/
-    ├── wwwroot/            # Static Files
-    │   ├── css/
-    │   ├── js/
-    │   └── lib/
-    └── Program.cs          # Web Entry Point
+├── src/
+│   ├── DotVacay.API/              # Web API Project
+│   │   ├── Controllers/           # API Controllers
+│   │   └── Program.cs             # API Entry Point
+│   │
+│   ├── DotVacay.Application/      # Application Services
+│   │   ├── DTOs/                  # Application DTOs
+│   │   └── Services/              # Business Logic Services
+│   │
+│   ├── DotVacay.Core/             # Core Business Logic
+│   │   ├── Entities/              # Domain Entities
+│   │   ├── Enums/                 # Enumerations
+│   │   ├── Interfaces/            # Repositories and Services 
+│   │   └── Models/                # DTOs and Request/Result models
+│   │
+│   ├── DotVacay.Infrastructure/   # Data Access & External Services
+│   │   ├── Data/                  # Database Context
+│   │   └── Repositories/          # Data Access Layer
+│   │
+│   ├── DotVacay.Web/              # Deprecated ASP.NET MVC Web Application
+│   │   ├── Controllers/           # MVC Controllers
+│   │   ├── Models/                # View Models
+│   │   ├── Views/                 # Razor Views
+│   │   └── Program.cs             # Web Entry Point
+│   │
+│   └── DotVacay.WebNg/            # Angular Web Application
+│       ├── src/                   # Angular source code
+│       │   ├── app/               # Application components
+│       │   │   ├── components/    # UI Component
+│       │   │   ├── pages/         # Pages
+│       │   │   ├── models/        # Models
+│       │   │   └── services/      # Services
+│       └── angular.json           # Angular configuration
 ```
 
 ## Getting Started
 
-1. **Prerequisites**
-   - .NET 9.0 SDK
-   - SQL Server
-   - Visual Studio 2022 or later
+### Prerequisites
+- .NET 9.0 SDK
+- SQL Server
+- Node.js 18+ and npm
+- Angular CLI 19+
 
-2. **Installation**
+### Backend Setup
+1. **Clone the repository**
    ```bash
-   # Clone the repository
    git clone https://github.com/djock/dot-vacay.git
-
-   # Open the solution in Visual Studio
-
-   # Update database
-   dotnet ef database update
+   cd dot-vacay
    ```
 
-3. **Configuration**
-   - Update the connection string in `appsettings.json`
-   - Configure JWT settings if needed
-
-4. **Running the Application**
+2. **Update database**
    ```bash
-   dotnet run --project DotVacay.ApiWeb
+   cd src
+   dotnet ef database update --project DotVacay.API
    ```
+
+3. **Run the API**
+   ```bash
+   dotnet run --project DotVacay.API
+   ```
+   The API will be available at http://localhost:5111 with Swagger documentation at http://localhost:5111/swagger/index.json
+
+### Frontend Setup
+1. **Install Angular dependencies**
+   ```bash
+   cd src/DotVacay.WebNg
+   npm install
+   ```
+
+2. **Run the Angular application**
+   ```bash
+   npm start
+   ```
+   The application will be available at http://localhost:4200
 
 ## Contributing
 

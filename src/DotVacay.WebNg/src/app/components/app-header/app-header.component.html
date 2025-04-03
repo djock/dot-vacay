@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<header class="header d-flex justify-content-between align-items-center p-3">
+  <div class="logo">
+    <a routerLink="/trips" class="text-decoration-none text-primary">
+      <h3 class="m-0">DotVacay</h3>
+    </a>
+  </div>
+  <div>
+    <div class="dropdown">
+      <button class="btn btn-primary" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-person-circle"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" >
+        <li><a class="dropdown-item" routerLink="/profile">My Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item btn-error" href="#" (click)="logout($event)">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>

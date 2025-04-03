@@ -448,3 +448,8 @@ $RECYCLE.BIN/
 
 # Production configuration files
 **/appsettings.Production.json
+
+# Node modules
+**/node_modules
+**/node_modules/
+/.angular/cache

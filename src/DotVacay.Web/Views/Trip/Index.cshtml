@@ -1,0 +1,197 @@
+﻿@using DotVacay.Core.Enums
+@model DotVacay.Web.Models.TripViewModel
+
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["FailMessage"] != null)
+{
+    <div class="alert alert-danger text-center">@TempData["FailMessage"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-primary text-center">@TempData["SuccessMessage"]</div>
+}
+
+<div class="position-relative">
+    <!-- Banner Image -->
+    <div class="trip-banner" style="height: 400px; overflow: hidden; position: relative;">
+        <img src="https://picsum.photos/seed/@Model.Id/1920/1080" class="w-100 h-100" style="object-fit: cover;" alt="Trip Banner">
+        <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);"></div>
+    </div>
+
+    <!-- Trip Info Card -->
+    <div class="container position-relative" style="margin-top: -100px;">
+        <div class="card shadow-lg">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h1 class="mb-2">@Model.Title</h1>
+                        <div class="text-muted">
+                            <i class="bi bi-calendar me-2"></i>
+                            @Model.StartDate!.Value.ToString("MMM dd") - @Model.EndDate!.Value.ToString("MMM dd, yyyy")
+                        </div>
+                        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                        {
+                            <div class="mt-2">
+                                <a href="https://www.google.com/maps?q=@Model.Latitude,@Model.Longitude"
+                                   target="_blank"
+                                   class="text-decoration-none">
+                                    <i class="bi bi-geo-alt"></i> View on Map
+                                </a>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="mb-0">@Model.Description</p>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mb-3">
+                        <a href="@Url.Action("Index", "App")" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Trips
+                        </a>
+                        @if (Model.IsOwner)
+                        {
+                            <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this trip?');">
+                                <input type="hidden" name="tripId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        }
+                        @if (!Model.IsOwner)
+                        {
+                            <form asp-action="Leave" method="post" onsubmit="return confirm('Are you sure you want to leave this trip?');">
+                                <input type="hidden" name="tripId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Itinerary -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            @{
+                var currentDate = Model.StartDate.Value.DateTime;
+                var endDate = Model.EndDate.Value.DateTime;
+                while (currentDate <= endDate)
+                {
+                    var dayPoints = Model.PointsOfInterest
+                        .Where(p => p.StartDate.HasValue && 
+                                   p.EndDate.HasValue &&
+                                   currentDate.Date >= p.StartDate.Value.Date && 
+                                   currentDate.Date <= p.EndDate.Value.Date)
+                        .OrderBy(p => p.StartDate!.Value.DateTime)
+                        .ToList();
+                    
+                    var dayCardViewModel = new DotVacay.Web.Models.DayCardViewModel
+                    {
+                        CurrentDate = currentDate,
+                        PointsOfInterest = dayPoints
+                    };
+                    
+                    @await Html.PartialAsync("_DayCard", dayCardViewModel)
+                    
+                    currentDate = currentDate.AddDays(1);
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+<!-- Add Point of Interest Modal -->
+<div class="modal fade" id="addPoiModal" tabindex="-1" aria-labelledby="addPoiModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPoiModalLabel">Add Point of Interest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    ViewData["TripId"] = Model.Id;
+                    // Create a new, empty ViewModel for the Add form
+                    var newPoi = new DotVacay.Web.Models.CreatePointOfInterestViewModel();
+                }
+                @await Html.PartialAsync("_CreatePointOfInterestForm", newPoi)
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Point of Interest Modal -->
+<div class="modal fade" id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPoiModalLabel">Edit Point of Interest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    ViewData["TripId"] = Model.Id;
+                    // Use an empty model - it will be populated by JavaScript
+                    var editPoi = new DotVacay.Web.Models.CreatePointOfInterestViewModel();
+                }
+                @await Html.PartialAsync("_CreatePointOfInterestForm", editPoi)
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            bottom: -20px;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+
+        .timeline-item:last-child::before {
+            bottom: 0;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            border: 2px solid #e9ecef;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/tripIndex.js"></script>
+    <script src="~/js/createPointOfInterestForm.js"></script>
+}
