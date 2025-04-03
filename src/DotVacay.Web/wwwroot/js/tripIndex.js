@@ -35,9 +35,6 @@ $(document).ready(function() {
         const startDate = button.data('poi-start-date');
         const endDate = button.data('poi-end-date');
         
-        console.log('Start date:', startDate);
-        console.log('End date:', endDate);
-        
         if (startDate) {
             form.find('input[name="StartDate"]').val(startDate);
         }

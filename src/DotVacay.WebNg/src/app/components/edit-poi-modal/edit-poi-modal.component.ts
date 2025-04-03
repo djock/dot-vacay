@@ -14,7 +14,7 @@ import { PointOfInterestType } from '../../enums/point-of-interest-type-enum';
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './edit-poi-modal.component.html',
   styleUrls: ['./edit-poi-modal.component.css'] 
-})
+})  
 export class EditPoiModal implements OnInit, OnChanges {
   poiModel: EditPoiModel = new EditPoiModel();
   validationErrors: any = {};
@@ -43,7 +43,6 @@ export class EditPoiModal implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.setDefaultDates();
-    
     // Close dropdown when clicking outside
     document.addEventListener('click', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -59,7 +58,6 @@ export class EditPoiModal implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // When poiToEdit changes, update the form
     if (changes['poiToEdit'] && changes['poiToEdit'].currentValue) {
       this.isEditMode = true;
       const poi = changes['poiToEdit'].currentValue;
@@ -81,6 +79,7 @@ export class EditPoiModal implements OnInit, OnChanges {
       if (poi.endDate) {
         this.poiModel.endDate = this.formatDateForInput(new Date(poi.endDate));
       }
+      
     } else if (changes['selectedDate'] && changes['selectedDate'].currentValue) {
       // For new POI with selected date
       this.isEditMode = false;
@@ -92,10 +91,16 @@ export class EditPoiModal implements OnInit, OnChanges {
       
       // Set default dates based on the selected date
       const selectedDate = new Date(changes['selectedDate'].currentValue);
-      this.poiModel.startDate = this.formatDateForInput(selectedDate);
       
-      const endDate = new Date(selectedDate);
-      endDate.setHours(selectedDate.getHours() + 1); // Default duration: 1 hour
+      // Set start time to current hour, rounded to nearest hour
+      const startDate = new Date(selectedDate);
+      const currentHour = new Date().getHours();
+      startDate.setHours(currentHour, 0, 0, 0);
+      this.poiModel.startDate = this.formatDateForInput(startDate);
+      
+      // Set end time to start time + 1 hour
+      const endDate = new Date(startDate);
+      endDate.setHours(startDate.getHours() + 1);
       this.poiModel.endDate = this.formatDateForInput(endDate);
     }
   }
@@ -104,26 +109,21 @@ export class EditPoiModal implements OnInit, OnChanges {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   setDefaultDates(): void {
     if (!this.poiModel.startDate && !this.selectedDate) {
-      // Format current date for date input
-      const formatDate = (date: Date): string => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
-
-      // Set default dates
+      // Set current time for start date
       const now = new Date();
-      this.poiModel.startDate = formatDate(now);
+      this.poiModel.startDate = this.formatDateForInput(now);
       
+      // Set end date to start date + 1 hour
       const endDate = new Date(now);
-      endDate.setDate(endDate.getDate() + 1); // Default trip length is 1 day
-      this.poiModel.endDate = formatDate(endDate);
+      endDate.setHours(endDate.getHours() + 1);
+      this.poiModel.endDate = this.formatDateForInput(endDate);
     }
   }
 
@@ -174,7 +174,7 @@ export class EditPoiModal implements OnInit, OnChanges {
     this.isLoading = true;
 
     this.debounceTimer = setTimeout(() => {
-      this.searchOsmService.searchLocations(query).subscribe({
+      this.searchOsmService.searchPointsOfInterest(query).subscribe({
         next: (data) => {
           this.locations = data;
           this.isLoading = false;
@@ -216,14 +216,15 @@ export class EditPoiModal implements OnInit, OnChanges {
     }
     
     this.isSubmitting = true;
-    
+
     if (this.tripId) {
       this.poiModel.tripId = this.tripId;
     }
-    
+
     // Use createOrUpdatePoi method to handle both create and update
     this.tripService.createOrUpdatePoi(this.poiModel, this.isEditMode).subscribe({
       next: (result) => {
+
         this.isSubmitting = false;
         if (result.success) {
           this.onEditPoi.emit(result);

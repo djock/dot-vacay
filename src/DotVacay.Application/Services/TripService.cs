@@ -108,10 +108,10 @@ namespace DotVacay.Application.Services
         {
             var trip = await tripRepository.GetByIdAsync(request.ResourceId);
 
-            if (trip == null) return new(false, null, Errors: [DomainErrors.General.NotFound]);
+            if (trip == null) return new(false, null, false, Errors: [DomainErrors.General.NotFound]);
 
             if (!trip.UserTrips.Any(ut => ut.UserId == request.UserId))
-                return new(false, null, Errors: [DomainErrors.Trip.UserNotMember]);
+                return new(false, null, false, Errors: [DomainErrors.Trip.UserNotMember]);
 
             var userTrip = trip.UserTrips.First(ut => ut.UserId == request.UserId);
 
@@ -122,7 +122,10 @@ namespace DotVacay.Application.Services
                 trip.PointsOfInterest = (List<PointOfInterest>)pois.Data;
             }
 
-            return new TripResult(true, trip);
+            var isOwner = trip.UserTrips
+               .Any(ut => ut.UserId == request.UserId && ut.Role == UserTripRole.Owner);
+
+            return new TripResult(true, trip, isOwner);
         }
 
         public async Task<TripIdResult> JoinAsync(JoinTripRequest request)

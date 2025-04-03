@@ -27,11 +27,14 @@ declare var bootstrap: any;
 export class TripDetailComponent implements OnInit {
   tripId: string = '';
   trip: any = null;
+  userIsOwner: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
   loading: boolean = true;
   tripDays: Date[] = [];
   private modalInstance: any;
+  selectedPoi: PointOfInterest | null = null;
+  selectedDate: Date | null = null; // Add this property
 
   constructor(private route: ActivatedRoute,
     private router: Router, private tripService: TripService
@@ -43,6 +46,7 @@ export class TripDetailComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tripId = params['id'];
+
       this.loadTripDetails();
     });
   }
@@ -60,6 +64,8 @@ export class TripDetailComponent implements OnInit {
         this.loading = false;
         if (result.success) {
           this.trip = result.trip;
+          this.userIsOwner = result.userIsOwner;
+
           this.generateTripDays();
         } else if (result.errors?.length) {
           this.errorMessage = result.errors[0];
@@ -115,14 +121,25 @@ export class TripDetailComponent implements OnInit {
   }
 
   openAddPoiModal(date: Date): void {
+    this.selectedDate = date; // Set the selected date
+    this.selectedPoi = null; // Clear selected POI when adding new
     if (this.modalInstance) {
       this.modalInstance.show();
     }
   }
 
   openEditPoiModal(poi: PointOfInterest): void {
+    this.selectedPoi = poi;
+    this.selectedDate = null; // Clear selectedDate when editing existing POI
+    
     if (this.modalInstance) {
       this.modalInstance.show();
+    } else {
+      // Try to initialize the modal if it wasn't initialized
+      if (this.editPoiModal) {
+        this.modalInstance = new bootstrap.Modal(this.editPoiModal.nativeElement);
+        this.modalInstance.show();
+      }
     }
   }
 
@@ -134,12 +151,13 @@ export class TripDetailComponent implements OnInit {
 
   deletePointOfInterest(poi: PointOfInterest): void {
     if (confirm('Are you sure you want to delete this point of interest?')) {
-      console.log('delete');
+      this.closeEditTripModal();
     }
   }
 
   onPoiSaved(success: boolean): void {
     if (success) {
+      this.closeEditTripModal();
       this.loadTripDetails();
       this.successMessage = 'Point of interest saved successfully';
       setTimeout(() => this.successMessage = '', 3000);

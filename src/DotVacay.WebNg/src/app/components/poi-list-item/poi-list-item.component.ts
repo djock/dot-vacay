@@ -11,9 +11,11 @@ import { PointOfInterestType } from '../../enums/point-of-interest-type-enum';
   standalone: true,
   imports: [CommonModule, RouterModule]
 })
-export class PoiListItemComponent implements OnInit {
+export class PoiListItemComponent  {
   @Input() poi!: PointOfInterest;  
+  @Input() currentDate: Date = new Date(); // Add this to track the current day being displayed
   @Output() onRefresh = new EventEmitter<boolean>();
+  @Output() onEditPoi = new EventEmitter<PointOfInterest>();
   
   // Make enum accessible in template
   PointOfInterestType = PointOfInterestType;
@@ -26,12 +28,31 @@ export class PoiListItemComponent implements OnInit {
     return PointOfInterestType.Landmark; // Default value
   }
 
-  constructor(private tripService: TripService) { }
-
-  ngOnInit(): void {
-    // Remove the route params subscription - this is likely causing the issue
-    console.log('poi in ngOnInit:', this.poi);
+  // Check if start date is in the current day
+  isStartDateInCurrentDay(): boolean {
+    if (!this.poi.startDate) return false;
+    
+    const startDate = new Date(this.poi.startDate);
+    const currentDay = new Date(this.currentDate);
+    
+    return startDate.getFullYear() === currentDay.getFullYear() &&
+           startDate.getMonth() === currentDay.getMonth() &&
+           startDate.getDate() === currentDay.getDate();
   }
+  
+  // Check if end date is in the current day
+  isEndDateInCurrentDay(): boolean {
+    if (!this.poi.endDate) return false;
+    
+    const endDate = new Date(this.poi.endDate);
+    const currentDay = new Date(this.currentDate);
+    
+    return endDate.getFullYear() === currentDay.getFullYear() &&
+           endDate.getMonth() === currentDay.getMonth() &&
+           endDate.getDate() === currentDay.getDate();
+  }
+
+  constructor(private tripService: TripService) { }
 
   deletePointOfInterest(): void {
     if (!this.poi) {
@@ -53,6 +74,7 @@ export class PoiListItemComponent implements OnInit {
   }
 
   openEditPoiModal(): void {
-    console.log('open modal edit for:', this.poi);
+    // Emit an event to the parent component to open the modal with this POI
+    this.onEditPoi.emit(this.poi);
   }
 }

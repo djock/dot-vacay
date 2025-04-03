@@ -16,7 +16,26 @@
 
     <!-- Middle: Content -->
     <div class="timeline-content flex-grow-1">
-      <h6 class="mb-1">{{ poi.title }}</h6>
+      <h6 class="mb-1">
+        {{ poi.title }}
+        <!-- For Accommodation type with special check-in/check-out display -->
+        <ng-container *ngIf="poi.type === PointOfInterestType.Accomodation && poi.startDate && poi.endDate">
+          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+            (Check in: {{ poi.startDate | date:'shortTime' }}, Check out: {{ poi.endDate | date:'shortTime' }})
+          </small>
+          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && !isEndDateInCurrentDay()">
+            (Check in: {{ poi.startDate | date:'shortTime' }})
+          </small>
+          <small class="text-muted ms-2" *ngIf="!isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+            (Check out: {{ poi.endDate | date:'shortTime' }})
+          </small>
+        </ng-container>
+        
+        <!-- For all other types, show regular time display -->
+        <small class="text-muted ms-2" *ngIf="poi.type !== PointOfInterestType.Accomodation && poi.startDate && poi.endDate && (isStartDateInCurrentDay() || isEndDateInCurrentDay())">
+          ({{ poi.startDate | date:'shortTime' }} - {{ poi.endDate | date:'shortTime' }})
+        </small>
+      </h6>
       <p *ngIf="poi.description" class="mb-0 text-muted">{{ poi.description }}</p>
       <div *ngIf="poi.latitude && poi.longitude && poi.latitude !== 0 && poi.longitude !== 0" class="mt-2">
         <a [href]="'https://www.google.com/maps?q=' + poi.latitude + ',' + poi.longitude"

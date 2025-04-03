@@ -1,4 +1,5 @@
 ﻿using DotVacay.Core.Common;
+using DotVacay.Core.Enums;
 using DotVacay.Core.Interfaces.Repositories;
 using DotVacay.Core.Interfaces.Services;
 using DotVacay.Core.Models.Requests;
@@ -12,12 +13,16 @@ namespace DotVacay.Application.Services
         {
             var trip = await tripRepository.GetByIdAsync(request.ResourceId);
 
-            if (trip == null) return new TripResult(false, null, Errors: [DomainErrors.General.NotFound]);
+            if (trip == null) return new TripResult(false, null, false, Errors: [DomainErrors.General.NotFound]);
 
             if (!trip.UserTrips.Any(ut => ut.UserId == request.UserId))
-                return new TripResult(false, null, Errors: [DomainErrors.Trip.UserNotMember]);
+                return new TripResult(false, null, false,  Errors: [DomainErrors.Trip.UserNotMember]);
 
-            return new TripResult(true, trip);
+            var isOwner = trip.UserTrips
+               .Any(ut => ut.UserId == request.UserId && ut.Role == UserTripRole.Owner);
+
+
+            return new TripResult(true,  trip, isOwner);
         }
 
         public async Task<bool> HasAccessToTrip(int tripId, string userId)

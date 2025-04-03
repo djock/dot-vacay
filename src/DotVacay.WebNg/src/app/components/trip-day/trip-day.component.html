@@ -14,7 +14,9 @@
     <div *ngFor="let poi of pointsOfInterest" class="mb-3 p-3 border rounded">
         <poi-list-item
           [poi]="poi"
-          (onRefresh)="refreshData()">
+          [currentDate]="currentDate"
+          (onRefresh)="refreshData()"
+          (onEditPoi)="handleEditPoi($event)">
         </poi-list-item>
     </div>
   </div>

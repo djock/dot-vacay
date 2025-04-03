@@ -40,24 +40,25 @@
     </div>
     <div class="mb-3">
       <label for="type" class="form-label">Type</label>
-      <select 
-        id="type"
-        [(ngModel)]="poiModel.type" 
-        name="type" 
-        class="form-control" 
-        required>
+      <select id="type"
+              [(ngModel)]="poiModel.type"
+              name="type"
+              class="form-control"
+              required>
         <option [ngValue]="0">Accommodation</option>
-        <option [ngValue]="1">Restaurant</option>
-        <option [ngValue]="2">Attraction</option>
-        <option [ngValue]="3">Transportation</option>
-        <option [ngValue]="4">Other</option>
+        <option [ngValue]="1">Transportation</option>
+        <option [ngValue]="2">Restaurant</option>
+        <option [ngValue]="3">Coffee</option>
+        <option [ngValue]="4">Museum</option>
+        <option [ngValue]="5">Landmark</option>
+        <option [ngValue]="6">Shopping</option>
       </select>
       <div *ngIf="validationErrors.type" class="text-danger">{{validationErrors.type}}</div>
     </div>
     <div class="mb-3">
       <label for="startDate" class="form-label">Start Time</label>
       <input 
-        type="date"
+        type="datetime-local"
         id="startDate"
         class="form-control"
         placeholder="Start Date"
@@ -71,7 +72,7 @@
     <div class="mb-3">
       <label for="endDate" class="form-label">End Time</label>
       <input 
-        type="date"
+        type="datetime-local"
         id="endDate"
         class="form-control"
         placeholder="End Date"

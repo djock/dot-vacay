@@ -5,7 +5,6 @@ function initializeCreateTripForm() {
     const locationInput = document.getElementById("locationInput");
 
     locationInput.addEventListener('input', (e) => {
-        console.log('Input event fired:', e.target.value);
         if (e.target.value.length > 3) {
             console.log('Input value is greater than 3 characters:', e.target.value);
         }
@@ -48,7 +47,6 @@ function initializeCreateTripForm() {
             const newEndDate = new Date(startDate);
             newEndDate.setDate(newEndDate.getDate() + 3);
             endDateInput.value = formatDate(newEndDate);
-            console.log("End date adjusted:", endDateInput.value);
         }
     });
 }
