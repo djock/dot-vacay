@@ -7,6 +7,7 @@ import { AppHeaderComponent } from "../../components/app-header/app-header.compo
 import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
+import { AiSuggestionService } from '../../services/ai-suggestion.service';
 
 declare var bootstrap: any;
 
@@ -34,21 +35,84 @@ export class TripDetailComponent implements OnInit {
   tripDays: Date[] = [];
   private modalInstance: any;
   selectedPoi: PointOfInterest | null = null;
-  selectedDate: Date | null = null; // Add this property
+  selectedDate: Date | null = null;
+  
+  // Add these properties for AI testing
+  aiTestLoading: boolean = false;
+  aiTestSuccess: boolean = false;
+  aiTestError: string = '';
 
-  constructor(private route: ActivatedRoute,
-    private router: Router, private tripService: TripService
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router, 
+    private tripService: TripService,
+    private aiSuggestionService: AiSuggestionService
   ) { }
 
   @ViewChild('editPoiModal') editPoiModal!: ElementRef;
 
-
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tripId = params['id'];
-
       this.loadTripDetails();
     });
+  }
+
+  // Add this method for AI testing
+  testAiSuggestions(): void {
+    if (!this.trip) {
+      this.aiTestError = 'Trip details not available';
+      return;
+    }
+
+    this.aiTestLoading = true;
+    this.aiTestSuccess = false;
+    this.aiTestError = '';
+
+    // Get the location from the trip
+    const location = this.trip.location || 'Paris';
+    
+    // Parse dates correctly
+    let startDate: Date;
+    let endDate: Date;
+    
+    try {
+      startDate = new Date(this.trip.startDate);
+      endDate = new Date(this.trip.endDate);
+      
+      // Log the dates for debugging
+      console.log('Start date:', startDate);
+      console.log('End date:', endDate);
+      
+      // Validate dates
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+    } catch (error) {
+      this.aiTestLoading = false;
+      this.aiTestError = 'Invalid trip dates';
+      console.error('Date parsing error:', error);
+      return;
+    }
+
+    // Call the AI suggestion service
+    this.aiSuggestionService.generateSuggestions(location, startDate, endDate, 'vacation')
+      .subscribe({
+        next: (result) => {
+          this.aiTestLoading = false;
+          if (result.success) {
+            this.aiTestSuccess = true;
+            console.log('AI Suggestions:', result.suggestions);
+          } else {
+            this.aiTestError = result.errors?.join(', ') || 'Failed to generate suggestions';
+          }
+        },
+        error: (error) => {
+          this.aiTestLoading = false;
+          this.aiTestError = 'Error: ' + (error.message || JSON.stringify(error));
+          console.error('AI suggestion error:', error);
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -211,3 +275,5 @@ export class TripDetailComponent implements OnInit {
     }, 5000);
   }
 }
+
+

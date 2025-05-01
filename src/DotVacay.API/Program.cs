@@ -15,6 +15,14 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure the configuration sources with proper precedence
+// Environment variables will override appsettings.json values
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables("DOTVACAY_") // Use a prefix to avoid conflicts with system variables
+    .AddUserSecrets<Program>(optional: true);
+
 var builderConfiguration = builder.Configuration;
 
 // Add services to the container.
@@ -62,6 +70,7 @@ builder.Services.AddScoped<ITripAccessHelperService, TripAccessHelperService>();
 builder.Services.AddScoped<IPointOfInterestRepository, PointOfInterestRepository>();
 builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAiSuggestionService, AiSuggestionService>();
 
 builder.Services.AddHttpClient();
 

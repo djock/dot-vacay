@@ -124,6 +124,54 @@ DotVacay/
    ```
    The application will be available at http://localhost:4200
 
+## Environment Variables
+
+DotVacay uses environment variables for configuration, especially for sensitive information like API keys.
+
+### Required Environment Variables
+
+- `DOTVACAY_OPENAI_APIKEY`: Your OpenAI API key
+
+### Setting Environment Variables
+
+#### Development (Windows)
+
+PowerShell (temporary, for current session):
+```powershell
+$env:DOTVACAY_OPENAI_APIKEY = "your-api-key-here"
+```
+
+Permanently (System Properties > Advanced > Environment Variables)
+
+Or use the provided setup script:
+```powershell
+.\setup-dev-env.ps1 "your-api-key-here"
+```
+
+#### Development (macOS/Linux)
+
+Bash/Zsh (temporary, for current session):
+```bash
+export DOTVACAY_OPENAI_APIKEY="your-api-key-here"
+```
+
+Permanently (add to ~/.bashrc or ~/.zshrc)
+
+Or use the provided setup script:
+```bash
+chmod +x ./setup-dev-env.sh
+./setup-dev-env.sh "your-api-key-here"
+```
+
+#### Production
+
+For production environments, set environment variables according to your hosting platform:
+
+- **Docker**: Use `-e DOTVACAY_OPENAI_APIKEY=your-api-key` when running containers
+- **Azure App Service**: Configure in Application Settings
+- **AWS**: Use environment variables in your task definitions or Lambda configurations
+- **Kubernetes**: Use secrets and environment variables in your pod specifications
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -136,3 +184,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Created by Ionut Mocanu
 - Inspired by Wanderlog and built as a learning project
+
