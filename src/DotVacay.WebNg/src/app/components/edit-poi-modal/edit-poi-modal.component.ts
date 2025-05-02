@@ -2,7 +2,7 @@ import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { TripService } from '../../services/trip.service';
+import { PointOfInterestService } from '../../services/point-of-interest.service';
 import { SearchOsmService, LocationResult } from '../../services/search-osm.service';
 import { EditPoiModel } from '../../models/edit-poi.model';
 import { PointOfInterest } from '../../models/point-of-interest.model';
@@ -37,8 +37,7 @@ export class EditPoiModal implements OnInit, OnChanges {
 
   constructor(
     private searchOsmService: SearchOsmService,
-    private tripService: TripService,
-    private router: Router
+    private pointOfInterestService: PointOfInterestService
   ) { }
 
   ngOnInit(): void {
@@ -222,9 +221,8 @@ export class EditPoiModal implements OnInit, OnChanges {
     }
 
     // Use createOrUpdatePoi method to handle both create and update
-    this.tripService.createOrUpdatePoi(this.poiModel, this.isEditMode).subscribe({
+    this.pointOfInterestService.createOrUpdatePoi(this.poiModel, this.isEditMode).subscribe({
       next: (result) => {
-
         this.isSubmitting = false;
         if (result.success) {
           this.onEditPoi.emit(result);
@@ -243,3 +241,4 @@ export class EditPoiModal implements OnInit, OnChanges {
     });
   }
 }
+

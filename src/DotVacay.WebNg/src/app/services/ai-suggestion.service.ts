@@ -7,17 +7,17 @@ export interface PoiSuggestion {
   title: string;
   description: string;
   type: string;
-  startDate?: string;
-  endDate?: string;
+  startDate: string;
+  endDate: string;
   url?: string;
   latitude?: number;
   longitude?: number;
 }
 
-export interface SuggestionsResult {
-  success: boolean;
-  errors?: string[];
-  suggestions: PoiSuggestion[];
+export interface GenerateSuggestionsRequest {
+  location: string;
+  startDate: string;
+  endDate: string;
 }
 
 @Injectable({
@@ -26,21 +26,15 @@ export interface SuggestionsResult {
 export class AiSuggestionService {
   constructor(private apiService: ApiService) { }
 
-  generateSuggestions(
-    location: string, 
-    startDate: Date, 
-    endDate: Date, 
-    tripType: string = 'vacation'
-  ): Observable<SuggestionsResult> {
-    // Use HttpParams instead of URLSearchParams for better compatibility
+  generateSuggestions(request: GenerateSuggestionsRequest): Observable<any> {
+    // Create query parameters for the GET request
     const params = new HttpParams()
-      .set('location', location)
-      .set('startDate', startDate.toISOString())
-      .set('endDate', endDate.toISOString())
-      .set('tripType', tripType);
+      .set('location', request.location)
+      .set('startDate', request.startDate)
+      .set('endDate', request.endDate);
     
-    // Use the ApiService to make the request with HttpParams
-    return this.apiService.get<SuggestionsResult>('/AiSuggestion/generate', params);
+    // Use GET instead of POST to match the controller
+    return this.apiService.get(`/AiSuggestion/generate?${params.toString()}`);
   }
 }
 

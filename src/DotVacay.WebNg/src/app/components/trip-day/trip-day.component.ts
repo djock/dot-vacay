@@ -13,10 +13,14 @@ import { PoiListItemComponent } from '../../components/poi-list-item/poi-list-it
 export class TripDayComponent {
   @Input() currentDate: Date = new Date();
   @Input() pointsOfInterest: PointOfInterest[] = [];
+  @Input() tripLocation: string = '';
   
   @Output() onAddPoi = new EventEmitter<Date>();
   @Output() onRefresh = new EventEmitter<Date>();
   @Output() onEditPoi = new EventEmitter<PointOfInterest>();
+  @Output() onGenerateAiSuggestions = new EventEmitter<{date: Date, location: string}>();
+
+  isGeneratingSuggestions: boolean = false;
 
   openAddPoiModal(): void {
     this.onAddPoi.emit(this.currentDate);
@@ -29,4 +33,18 @@ export class TripDayComponent {
   handleEditPoi(poi: PointOfInterest): void {
     this.onEditPoi.emit(poi);
   }
+
+  generateAiSuggestions(): void {
+    this.isGeneratingSuggestions = true;
+    this.onGenerateAiSuggestions.emit({
+      date: this.currentDate,
+      location: this.tripLocation
+    });
+  }
+
+  setGeneratingStatus(status: boolean): void {
+    this.isGeneratingSuggestions = status;
+  }
 }
+
+

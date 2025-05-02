@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
@@ -7,7 +7,8 @@ import { AppHeaderComponent } from "../../components/app-header/app-header.compo
 import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
-import { AiSuggestionService } from '../../services/ai-suggestion.service';
+import { AiSuggestionService, PoiSuggestion } from '../../services/ai-suggestion.service';
+import { PointOfInterestService } from '../../services/point-of-interest.service';
 
 declare var bootstrap: any;
 
@@ -21,6 +22,9 @@ declare var bootstrap: any;
     AppHeaderComponent,
     EditPoiModal,
     TripDayComponent
+  ],
+  providers: [
+    PointOfInterestService
   ],
   templateUrl: './trip-detail.component.html',
   styleUrls: ['./trip-detail.component.css']
@@ -42,11 +46,14 @@ export class TripDetailComponent implements OnInit {
   aiTestSuccess: boolean = false;
   aiTestError: string = '';
 
+  @ViewChildren(TripDayComponent) tripDayComponents!: QueryList<TripDayComponent>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router, 
     private tripService: TripService,
-    private aiSuggestionService: AiSuggestionService
+    private aiSuggestionService: AiSuggestionService,
+    private pointOfInterestService: PointOfInterestService
   ) { }
 
   @ViewChild('editPoiModal') editPoiModal!: ElementRef;
@@ -70,7 +77,7 @@ export class TripDetailComponent implements OnInit {
     this.aiTestError = '';
 
     // Get the location from the trip
-    const location = this.trip.location || 'Paris';
+    const location = this.trip.title || 'Paris';
     
     // Parse dates correctly
     let startDate: Date;
@@ -95,8 +102,14 @@ export class TripDetailComponent implements OnInit {
       return;
     }
 
-    // Call the AI suggestion service
-    this.aiSuggestionService.generateSuggestions(location, startDate, endDate, 'vacation')
+    // Call the AI suggestion service with the correct parameter format
+    const request = {
+      location: location,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    };
+
+    this.aiSuggestionService.generateSuggestions(request)
       .subscribe({
         next: (result) => {
           this.aiTestLoading = false;
@@ -273,6 +286,129 @@ export class TripDetailComponent implements OnInit {
     setTimeout(() => {
       this.successMessage = '';
     }, 5000);
+  }
+
+  // This method is called when the AI Suggestions button is clicked on a specific day
+  generateDayAiSuggestions(event: {date: Date, location: string}): void {
+    // Find the corresponding trip day component
+    const dayComponent = this.findTripDayComponent(event.date);
+    
+    // Set the component to loading state
+    if (dayComponent) {
+      dayComponent.setGeneratingStatus(true);
+    }
+    
+    // Create start and end date for the specific day (full day)
+    const startDate = new Date(event.date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(event.date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    console.log(`Generating AI suggestions for ${event.location} on ${startDate.toLocaleDateString()}`);
+    
+    // Create the request with the specific day's date
+    const request = {
+      location: event.location,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    };
+    
+    // Call the AI suggestion service
+    this.aiSuggestionService.generateSuggestions(request).subscribe({
+      next: (result) => {
+        if (result.success && result.suggestions) {
+          console.log(`Received ${result.suggestions.length} AI suggestions for ${startDate.toLocaleDateString()}`);
+          
+          // Process each suggestion to ensure it's for the specific day
+          const processedSuggestions = result.suggestions.map((suggestion: PoiSuggestion) => {
+            // Ensure the suggestion's start and end dates are within the specific day
+            const suggestionStartDate = new Date(suggestion.startDate);
+            const suggestionEndDate = new Date(suggestion.endDate);
+            
+            // If the dates are outside the day's range, adjust them
+            if (suggestionStartDate < startDate || suggestionStartDate > endDate) {
+              suggestion.startDate = startDate.toISOString();
+            }
+            
+            if (suggestionEndDate < startDate || suggestionEndDate > endDate) {
+              suggestion.endDate = endDate.toISOString();
+            }
+            
+            return suggestion;
+          });
+          
+          // Save the processed suggestions
+          this.saveSuggestions(processedSuggestions, this.tripId);
+        } else {
+          console.error('Failed to generate AI suggestions:', result.errors);
+        }
+        
+        // Update UI
+        if (dayComponent) {
+          dayComponent.setGeneratingStatus(false);
+        }
+        
+        // Refresh data to show new POIs
+        this.loadTripDetails();
+      },
+      error: (error: any) => {
+        console.error('Error generating AI suggestions:', error);
+        if (dayComponent) {
+          dayComponent.setGeneratingStatus(false);
+        }
+      }
+    });
+  }
+
+  // Helper method to find the TripDayComponent for a specific date
+  private findTripDayComponent(date: Date): TripDayComponent | undefined {
+    if (!this.tripDayComponents) return undefined;
+    
+    return this.tripDayComponents.find(component => {
+      const componentDate = new Date(component.currentDate);
+      return componentDate.getFullYear() === date.getFullYear() &&
+             componentDate.getMonth() === date.getMonth() &&
+             componentDate.getDate() === date.getDate();
+    });
+  }
+
+  // Helper method to save suggestions as POIs
+  private saveSuggestions(suggestions: PoiSuggestion[], tripId: string): void {
+    suggestions.forEach((suggestion: PoiSuggestion) => {
+      // Map suggestion type string to enum value
+      let poiType = 3; // Default to Attraction
+      if (suggestion.type.toLowerCase().includes('accommodation')) {
+        poiType = 0; // Accommodation
+      } else if (suggestion.type.toLowerCase().includes('food')) {
+        poiType = 1; // Food
+      } else if (suggestion.type.toLowerCase().includes('car')) {
+        poiType = 2; // CarRental
+      }
+      
+      // Create the POI object with the suggestion data
+      const poi = {
+        tripId: tripId,
+        title: suggestion.title,
+        description: suggestion.description,
+        type: poiType,
+        startDate: suggestion.startDate,
+        endDate: suggestion.endDate,
+        url: suggestion.url || '',
+        latitude: suggestion.latitude || 0,
+        longitude: suggestion.longitude || 0
+      };
+      
+      // Save the POI using the createOrUpdatePoi method
+      this.pointOfInterestService.createOrUpdatePoi(poi, false).subscribe({
+        next: (result: any) => {
+          console.log('AI suggestion saved as POI:', suggestion.title);
+        },
+        error: (error: any) => {
+          console.error('Error saving AI suggestion:', error);
+        }
+      });
+    });
   }
 }
 

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule} from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TripService } from '../../services/trip.service';
+import { PointOfInterestService } from '../../services/point-of-interest.service';
 import { PointOfInterest } from '../../models/point-of-interest.model';
 import { PointOfInterestType } from '../../enums/point-of-interest-type-enum';
 
@@ -52,7 +52,7 @@ export class PoiListItemComponent  {
            endDate.getDate() === currentDay.getDate();
   }
 
-  constructor(private tripService: TripService) { }
+  constructor(private pointOfInterestService: PointOfInterestService) { }
 
   deletePointOfInterest(): void {
     if (!this.poi) {
@@ -61,7 +61,7 @@ export class PoiListItemComponent  {
     }
     
     if (confirm('Are you sure you want to delete this point of interest?')) {
-      this.tripService.deletePointOfInterest(this.poi.id).subscribe({
+      this.pointOfInterestService.deletePointOfInterest(this.poi.id).subscribe({
         next: (result) => {
           this.onRefresh.emit(true);
         },
