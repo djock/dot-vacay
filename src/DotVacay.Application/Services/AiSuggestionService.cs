@@ -56,7 +56,8 @@ namespace DotVacay.Application.Services
                 var messages = new List<ChatMessage> { 
                     new SystemChatMessage(
                         "You are an expert travel planning assistant. Your task is to generate a detailed, realistic itinerary for a trip, focusing on points of interest. " +
-                        "All suggestions should be accurate, up-to-date, and practical. Format your response as a single valid JSON array only, without any extra text or explanations."
+                        "All suggestions should be accurate, up-to-date, and practical. Format your response as a single valid JSON array only, without any extra text or explanations. " +
+                        "IMPORTANT: All times should be in the local timezone of the destination location."
                     ),
                     new UserChatMessage(
                         $"Create an itinerary for a {days}-day trip to {request.Location}, from {request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd}. " +
@@ -66,8 +67,8 @@ namespace DotVacay.Application.Services
                         "- title (string): Name of the place\n" +
                         "- description (string): Brief, accurate summary\n" +
                         "- type (string): One of 'Restaurant', 'Coffee', 'Museum', 'Landmark', or 'Shopping'\n" +
-                        "- startDate (string): ISO 8601 date-time (e.g., 2025-05-30T09:00:00Z) within the trip period, including hour\n" +
-                        "- endDate (string): ISO 8601 date-time within the trip period, including hour\n" +
+                        "- startDate (string): ISO 8601 date-time (e.g., 2025-05-30T09:00:00) within the trip period, including hour in LOCAL TIME of the destination\n" +
+                        "- endDate (string): ISO 8601 date-time within the trip period, including hour in LOCAL TIME of the destination\n" +
                         "- url (string, optional): Official website or relevant link\n" +
                         "- latitude (number, optional): Decimal latitude\n" +
                         "- longitude (number, optional): Decimal longitude\n\n" +
@@ -76,9 +77,10 @@ namespace DotVacay.Application.Services
                         "2. The time spent at each location should be realistic (e.g., 1-2 hours for a museum, 1 hour for a meal, etc.).\n" +
                         "3. Suggestions should be geographically logical (avoid unnecessary travel across the city between consecutive points).\n" +
                         "4. Return ONLY a valid JSON array of objects with the specified fields. Do NOT include any narrative, explanation, or formatting outside the array.\n" +
-                        "5. Make sure the suggestions do not exceed the time box, into the second day .\n" +
-                        $"6. Make sure the suggestions for eating are also within the recommended time period for the {request.Location} customs.\n" +
-                        $"7. Make sure the museums / attractions / landmarks suggestions are not outside of their working hours"
+                        "5. Make sure the suggestions do not exceed the time box, into the second day.\n" +
+                        "6. Make sure the suggestions for eating are also within the recommended time period for the local customs.\n" +
+                        "7. Make sure the museums / attractions / landmarks suggestions are not outside of their working hours.\n" +
+                        "8. IMPORTANT: All times should be in the local timezone of {request.Location}, not UTC."
                     )
                 };
 
@@ -196,12 +198,5 @@ namespace DotVacay.Application.Services
     }
 
 }
-
-
-
-
-
-
-
 
 

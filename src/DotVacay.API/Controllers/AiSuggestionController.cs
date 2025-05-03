@@ -34,7 +34,7 @@ namespace DotVacay.Api.Controllers
                 return BadRequest(new { success = false, errors = new[] { "Trip ID is required" } });
             }
 
-            var request = new GenerateTripSuggestionRequest(location, startDate, endDate, tripId, UserId, UserEmail );
+            var request = new GenerateTripSuggestionRequest(location, startDate, endDate, tripId, UserId, UserEmail);
 
             var result = await aiService.GenerateTripSuggestionsAsync(request);
             return Ok(result);
