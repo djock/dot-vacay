@@ -4,7 +4,7 @@ namespace DotVacay.Core.Models.Results
 {
     public record SuggestionsResult : RequestResult 
     {
-        public List<PoiSuggestion> Suggestions { get; set; } = new List<PoiSuggestion>();
+        public List<PoiSuggestion> Suggestions { get; set; } = [];
 
         public SuggestionsResult(bool success, List<string>? errors = null, List<PoiSuggestion>? suggestions = null) 
             : base(success, errors)

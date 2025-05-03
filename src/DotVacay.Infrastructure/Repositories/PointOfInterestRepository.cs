@@ -13,6 +13,12 @@ namespace DotVacay.Infrastructure.Repositories
             await SaveChangesAsync();
         }
 
+        public async Task AddRangeAsync(IEnumerable<PointOfInterest> pointsOfInterest)
+        {
+            context.PointsOfInterest.AddRange(pointsOfInterest);
+            await SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<PointOfInterest>?> GetAllAsync(int id)
         {
             var pois = await context.PointsOfInterest
@@ -46,4 +52,5 @@ namespace DotVacay.Infrastructure.Repositories
             await context.SaveChangesAsync();
         }
     }
-}
+}   
+

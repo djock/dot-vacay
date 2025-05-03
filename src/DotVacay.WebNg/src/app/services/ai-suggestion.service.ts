@@ -18,6 +18,7 @@ export interface GenerateSuggestionsRequest {
   location: string;
   startDate: string;
   endDate: string;
+  tripId: string;
 }
 
 @Injectable({
@@ -31,8 +32,9 @@ export class AiSuggestionService {
     const params = new HttpParams()
       .set('location', request.location)
       .set('startDate', request.startDate)
-      .set('endDate', request.endDate);
-    
+      .set('endDate', request.endDate)
+      .set('tripId', request.tripId);
+
     // Use GET instead of POST to match the controller
     return this.apiService.get(`/AiSuggestion/generate?${params.toString()}`);
   }

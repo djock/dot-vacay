@@ -4,12 +4,13 @@ using DotVacay.Core.Models.Suggestions;
 using DotVacay.Core.Enums;
 using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using DotVacay.Core.Interfaces.Repositories;
+using DotVacay.Core.Entities;
+using DotVacay.Core.Common;
+using Microsoft.AspNetCore.Identity;
+using DotVacay.Core.Models.Requests;
 
 namespace DotVacay.Application.Services
 {
@@ -17,10 +18,16 @@ namespace DotVacay.Application.Services
     {
         private readonly string _apiKey;
         private readonly ILogger<AiSuggestionService> _logger;
+        private readonly IPointOfInterestRepository _poiRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AiSuggestionService(ILogger<AiSuggestionService> logger)
+        public AiSuggestionService(
+            ILogger<AiSuggestionService> logger,
+            IPointOfInterestRepository poiRepository, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
+            _poiRepository = poiRepository;
+            _userManager = userManager;
 
             _apiKey = Environment.GetEnvironmentVariable("DOTVACAY_OPENAI_APIKEY") ?? string.Empty;
 
@@ -31,30 +38,50 @@ namespace DotVacay.Application.Services
             }
         }
 
-        public async Task<SuggestionsResult> GenerateTripSuggestionsAsync(string location, DateTime startDate, DateTime endDate)
+        public async Task<SuggestionsResult> GenerateTripSuggestionsAsync(GenerateTripSuggestionRequest request)
         {
+            var user = await _userManager.FindByEmailAsync(request.UserEmail); 
+            if (user == null) return new SuggestionsResult(false, errors: [DomainErrors.Auth.UserNotFound], suggestions: []);
+
             try
             {
-                _logger.LogInformation($"Generating suggestions for {location} from {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
+                _logger.LogInformation($"Generating suggestions for {request.Location} from {request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd}");
                 
                 // Create OpenAI client
                 var client = new ChatClient(model: "gpt-4.1-mini", apiKey: _apiKey);
 
                 // Create the prompt
-                int days = (endDate - startDate).Days + 1;
-                
-                var messages = new List<ChatMessage>
-                {
-                    new SystemChatMessage("You are a travel planning assistant. Generate a list of points of interest for a trip. Provide realistic suggestions with accurate details. Format your response as JSON."),
-                    new UserChatMessage($"Create an itinerary for a {days}-day trip to {location} from {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}. " +
-                                                   $"Include a mix of attractions, restaurants, and accommodations. " +
-                                                   $"For each point of interest, provide: title, description, type (must be one of:  Accomodation, Transportation,Restaurant,Coffee,Museum,Landmark,Shopping), " +
-                                                   $"start date/time, end date/time with hour included (make sure) and URL if applicable. " +
-                                                   $"Return ONLY   valid JSON array that can be parsed, with each item having these properties: " +
-                                                   $"title (string), description (string), type (string), startDate (ISO date string), endDate (ISO date string), " +
-                                                   $"url (string, optional), latitude (number, optional), longitude (number, optional). " +
-                                                   $"Ensure all dates are within the trip period.")
+                int days = (request.EndDate - request.StartDate).Days + 1;
+
+                var messages = new List<ChatMessage> { 
+                    new SystemChatMessage(
+                        "You are an expert travel planning assistant. Your task is to generate a detailed, realistic itinerary for a trip, focusing on points of interest. " +
+                        "All suggestions should be accurate, up-to-date, and practical. Format your response as a single valid JSON array only, without any extra text or explanations."
+                    ),
+                    new UserChatMessage(
+                        $"Create an itinerary for a {days}-day trip to {request.Location}, from {request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd}. " +
+                        "Include a balanced mix of attractions, restaurants, coffee shops, museums, landmarks, and shopping venues. " +
+                        "Do NOT include accommodations or transportation options. " +
+                        "For each point of interest, provide the following fields:\n" +
+                        "- title (string): Name of the place\n" +
+                        "- description (string): Brief, accurate summary\n" +
+                        "- type (string): One of 'Restaurant', 'Coffee', 'Museum', 'Landmark', or 'Shopping'\n" +
+                        "- startDate (string): ISO 8601 date-time (e.g., 2025-05-30T09:00:00Z) within the trip period, including hour\n" +
+                        "- endDate (string): ISO 8601 date-time within the trip period, including hour\n" +
+                        "- url (string, optional): Official website or relevant link\n" +
+                        "- latitude (number, optional): Decimal latitude\n" +
+                        "- longitude (number, optional): Decimal longitude\n\n" +
+                        "Requirements:\n" +
+                        "1. All dates and times must be within the trip period and ordered chronologically from morning to evening each day.\n" +
+                        "2. The time spent at each location should be realistic (e.g., 1-2 hours for a museum, 1 hour for a meal, etc.).\n" +
+                        "3. Suggestions should be geographically logical (avoid unnecessary travel across the city between consecutive points).\n" +
+                        "4. Return ONLY a valid JSON array of objects with the specified fields. Do NOT include any narrative, explanation, or formatting outside the array.\n" +
+                        "5. Make sure the suggestions do not exceed the time box, into the second day .\n" +
+                        $"6. Make sure the suggestions for eating are also within the recommended time period for the {request.Location} customs.\n" +
+                        $"7. Make sure the museums / attractions / landmarks suggestions are not outside of their working hours"
+                    )
                 };
+
 
                 // Get completion
                 var chatCompletion = await client.CompleteChatAsync(messages);
@@ -72,8 +99,9 @@ namespace DotVacay.Application.Services
                         try
                         {
                             // Parse the JSON into our model
-                            var suggestions = System.Text.Json.JsonSerializer.Deserialize<List<PoiSuggestion>>(jsonContent,
-                                new System.Text.Json.JsonSerializerOptions { 
+                            List<PoiSuggestion>? suggestions = JsonSerializer.Deserialize<List<PoiSuggestion>>(jsonContent,
+                                new JsonSerializerOptions
+                                { 
                                     PropertyNameCaseInsensitive = true,
                                     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                                 });
@@ -84,7 +112,8 @@ namespace DotVacay.Application.Services
                                 return new SuggestionsResult(false, new List<string> { "Failed to generate suggestions" });
                             }
 
-                            // Map string type values to enum
+                            // Map string type values to enum and save to database
+                            var pointsOfInterest = new List<PointOfInterest>();
                             foreach (var suggestion in suggestions)
                             {
                                 if (Enum.TryParse<PointOfInterestType>(suggestion.Type, true, out var poiType))
@@ -94,7 +123,32 @@ namespace DotVacay.Application.Services
                                 else
                                 {
                                     _logger.LogWarning($"Unknown POI type: {suggestion.Type}");
+                                    // Default to Landmark if type is unknown
+                                    suggestion.TypeEnum = PointOfInterestType.Landmark;
                                 }
+
+                                // Create a PointOfInterest entity from the suggestion
+                                var poi = new PointOfInterest
+                                {
+                                    Title = suggestion.Title,
+                                    Description = suggestion.Description,
+                                    Type = suggestion.TypeEnum,
+                                    StartDate = suggestion.StartDate,
+                                    EndDate = suggestion.EndDate,
+                                    Url = suggestion.Url ?? string.Empty,
+                                    Latitude = suggestion.Latitude ?? 0,
+                                    Longitude = suggestion.Longitude ?? 0,
+                                    TripId = int.Parse(request.TripId),
+                                };
+
+                                pointsOfInterest.Add(poi);
+                            }
+
+                            // Save all points of interest in a single database operation
+                            if (pointsOfInterest.Any())
+                            {
+                                await _poiRepository.AddRangeAsync(pointsOfInterest);
+                                _logger.LogInformation($"Saved {pointsOfInterest.Count} points of interest to the database");
                             }
 
                             return new SuggestionsResult(true, null, suggestions);
@@ -142,6 +196,7 @@ namespace DotVacay.Application.Services
     }
 
 }
+
 
 
 

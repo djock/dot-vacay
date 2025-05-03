@@ -65,69 +65,6 @@ export class TripDetailComponent implements OnInit {
     });
   }
 
-  // Add this method for AI testing
-  testAiSuggestions(): void {
-    if (!this.trip) {
-      this.aiTestError = 'Trip details not available';
-      return;
-    }
-
-    this.aiTestLoading = true;
-    this.aiTestSuccess = false;
-    this.aiTestError = '';
-
-    // Get the location from the trip
-    const location = this.trip.title || 'Paris';
-    
-    // Parse dates correctly
-    let startDate: Date;
-    let endDate: Date;
-    
-    try {
-      startDate = new Date(this.trip.startDate);
-      endDate = new Date(this.trip.endDate);
-      
-      // Log the dates for debugging
-      console.log('Start date:', startDate);
-      console.log('End date:', endDate);
-      
-      // Validate dates
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        throw new Error('Invalid date format');
-      }
-    } catch (error) {
-      this.aiTestLoading = false;
-      this.aiTestError = 'Invalid trip dates';
-      console.error('Date parsing error:', error);
-      return;
-    }
-
-    // Call the AI suggestion service with the correct parameter format
-    const request = {
-      location: location,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
-    };
-
-    this.aiSuggestionService.generateSuggestions(request)
-      .subscribe({
-        next: (result) => {
-          this.aiTestLoading = false;
-          if (result.success) {
-            this.aiTestSuccess = true;
-            console.log('AI Suggestions:', result.suggestions);
-          } else {
-            this.aiTestError = result.errors?.join(', ') || 'Failed to generate suggestions';
-          }
-        },
-        error: (error) => {
-          this.aiTestLoading = false;
-          this.aiTestError = 'Error: ' + (error.message || JSON.stringify(error));
-          console.error('AI suggestion error:', error);
-        }
-      });
-  }
-
   ngAfterViewInit(): void {
     if (this.editPoiModal) {
       this.modalInstance = new bootstrap.Modal(this.editPoiModal.nativeElement);
@@ -297,49 +234,26 @@ export class TripDetailComponent implements OnInit {
     if (dayComponent) {
       dayComponent.setGeneratingStatus(true);
     }
+
+    const d = event.date; // local midnight
+    const startDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
+    const endDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
     
-    // Create start and end date for the specific day (full day)
-    const startDate = new Date(event.date);
-    startDate.setHours(0, 0, 0, 0);
-    
-    const endDate = new Date(event.date);
-    endDate.setHours(23, 59, 59, 999);
-    
-    console.log(`Generating AI suggestions for ${event.location} on ${startDate.toLocaleDateString()}`);
-    
-    // Create the request with the specific day's date
+    // Create the request with the specific day's date and trip ID
     const request = {
       location: event.location,
       startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
+      endDate: endDate.toISOString(),
+      tripId: this.tripId
     };
     
     // Call the AI suggestion service
     this.aiSuggestionService.generateSuggestions(request).subscribe({
-      next: (result) => {
-        if (result.success && result.suggestions) {
+      next: (result) => { 
+        if (result.success) {
           console.log(`Received ${result.suggestions.length} AI suggestions for ${startDate.toLocaleDateString()}`);
-          
-          // Process each suggestion to ensure it's for the specific day
-          const processedSuggestions = result.suggestions.map((suggestion: PoiSuggestion) => {
-            // Ensure the suggestion's start and end dates are within the specific day
-            const suggestionStartDate = new Date(suggestion.startDate);
-            const suggestionEndDate = new Date(suggestion.endDate);
-            
-            // If the dates are outside the day's range, adjust them
-            if (suggestionStartDate < startDate || suggestionStartDate > endDate) {
-              suggestion.startDate = startDate.toISOString();
-            }
-            
-            if (suggestionEndDate < startDate || suggestionEndDate > endDate) {
-              suggestion.endDate = endDate.toISOString();
-            }
-            
-            return suggestion;
-          });
-          
-          // Save the processed suggestions
-          this.saveSuggestions(processedSuggestions, this.tripId);
+          // Refresh data to show new POIs
+          this.loadTripDetails();
         } else {
           console.error('Failed to generate AI suggestions:', result.errors);
         }
@@ -348,9 +262,6 @@ export class TripDetailComponent implements OnInit {
         if (dayComponent) {
           dayComponent.setGeneratingStatus(false);
         }
-        
-        // Refresh data to show new POIs
-        this.loadTripDetails();
       },
       error: (error: any) => {
         console.error('Error generating AI suggestions:', error);
@@ -373,43 +284,5 @@ export class TripDetailComponent implements OnInit {
     });
   }
 
-  // Helper method to save suggestions as POIs
-  private saveSuggestions(suggestions: PoiSuggestion[], tripId: string): void {
-    suggestions.forEach((suggestion: PoiSuggestion) => {
-      // Map suggestion type string to enum value
-      let poiType = 3; // Default to Attraction
-      if (suggestion.type.toLowerCase().includes('accommodation')) {
-        poiType = 0; // Accommodation
-      } else if (suggestion.type.toLowerCase().includes('food')) {
-        poiType = 1; // Food
-      } else if (suggestion.type.toLowerCase().includes('car')) {
-        poiType = 2; // CarRental
-      }
-      
-      // Create the POI object with the suggestion data
-      const poi = {
-        tripId: tripId,
-        title: suggestion.title,
-        description: suggestion.description,
-        type: poiType,
-        startDate: suggestion.startDate,
-        endDate: suggestion.endDate,
-        url: suggestion.url || '',
-        latitude: suggestion.latitude || 0,
-        longitude: suggestion.longitude || 0
-      };
-      
-      // Save the POI using the createOrUpdatePoi method
-      this.pointOfInterestService.createOrUpdatePoi(poi, false).subscribe({
-        next: (result: any) => {
-          console.log('AI suggestion saved as POI:', suggestion.title);
-        },
-        error: (error: any) => {
-          console.error('Error saving AI suggestion:', error);
-        }
-      });
-    });
-  }
+  // Remove the saveSuggestions method as it's no longer needed
 }
-
-
