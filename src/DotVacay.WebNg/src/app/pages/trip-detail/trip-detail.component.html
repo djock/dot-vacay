@@ -41,7 +41,6 @@
     </div>
   </div>
 </div>
-
 <div style="margin-top: 100px;"></div>
 
 <!-- Daily Itinerary -->
@@ -54,9 +53,11 @@
         <trip-day 
           [currentDate]="day" 
           [pointsOfInterest]="getPointsOfInterestForDay(day)"
+          [tripLocation]="trip.title"
           (onAddPoi)="openAddPoiModal($event)"
           (onRefresh)="loadTripDetails()"
-          (onEditPoi)="openEditPoiModal($event)">
+          (onEditPoi)="openEditPoiModal($event)"
+          (onGenerateAiSuggestions)="generateDayAiSuggestions($event)">
         </trip-day>
       </div>
         
@@ -88,3 +89,4 @@
     </div>
   </div>
   </div>
+

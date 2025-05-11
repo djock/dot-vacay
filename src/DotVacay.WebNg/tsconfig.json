@@ -16,7 +16,20 @@
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022"
+    "module": "ES2022",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": [
+      "crypto-js"
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@services/*": ["src/app/services/*"],
+      "@models/*": ["src/app/models/*"],
+      "@components/*": ["src/app/components/*"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -25,3 +38,5 @@
     "strictTemplates": true
   }
 }
+
+

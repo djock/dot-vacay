@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
@@ -7,6 +7,8 @@ import { AppHeaderComponent } from "../../components/app-header/app-header.compo
 import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
+import { AiSuggestionService, PoiSuggestion } from '../../services/ai-suggestion.service';
+import { PointOfInterestService } from '../../services/point-of-interest.service';
 
 declare var bootstrap: any;
 
@@ -21,6 +23,9 @@ declare var bootstrap: any;
     EditPoiModal,
     TripDayComponent
   ],
+  providers: [
+    PointOfInterestService
+  ],
   templateUrl: './trip-detail.component.html',
   styleUrls: ['./trip-detail.component.css']
 })
@@ -34,19 +39,28 @@ export class TripDetailComponent implements OnInit {
   tripDays: Date[] = [];
   private modalInstance: any;
   selectedPoi: PointOfInterest | null = null;
-  selectedDate: Date | null = null; // Add this property
+  selectedDate: Date | null = null;
+  
+  // Add these properties for AI testing
+  aiTestLoading: boolean = false;
+  aiTestSuccess: boolean = false;
+  aiTestError: string = '';
 
-  constructor(private route: ActivatedRoute,
-    private router: Router, private tripService: TripService
+  @ViewChildren(TripDayComponent) tripDayComponents!: QueryList<TripDayComponent>;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router, 
+    private tripService: TripService,
+    private aiSuggestionService: AiSuggestionService,
+    private pointOfInterestService: PointOfInterestService
   ) { }
 
   @ViewChild('editPoiModal') editPoiModal!: ElementRef;
 
-
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tripId = params['id'];
-
       this.loadTripDetails();
     });
   }
@@ -210,4 +224,65 @@ export class TripDetailComponent implements OnInit {
       this.successMessage = '';
     }, 5000);
   }
+
+  // This method is called when the AI Suggestions button is clicked on a specific day
+  generateDayAiSuggestions(event: {date: Date, location: string}): void {
+    // Find the corresponding trip day component
+    const dayComponent = this.findTripDayComponent(event.date);
+    
+    // Set the component to loading state
+    if (dayComponent) {
+      dayComponent.setGeneratingStatus(true);
+    }
+
+    const d = event.date; // local midnight
+    const startDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
+    const endDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
+    
+    // Create the request with the specific day's date and trip ID
+    const request = {
+      location: event.location,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      tripId: this.tripId
+    };
+    
+    // Call the AI suggestion service
+    this.aiSuggestionService.generateSuggestions(request).subscribe({
+      next: (result) => { 
+        if (result.success) {
+          console.log(`Received ${result.suggestions.length} AI suggestions for ${startDate.toLocaleDateString()}`);
+          // Refresh data to show new POIs
+          this.loadTripDetails();
+        } else {
+          console.error('Failed to generate AI suggestions:', result.errors);
+        }
+        
+        // Update UI
+        if (dayComponent) {
+          dayComponent.setGeneratingStatus(false);
+        }
+      },
+      error: (error: any) => {
+        console.error('Error generating AI suggestions:', error);
+        if (dayComponent) {
+          dayComponent.setGeneratingStatus(false);
+        }
+      }
+    });
+  }
+
+  // Helper method to find the TripDayComponent for a specific date
+  private findTripDayComponent(date: Date): TripDayComponent | undefined {
+    if (!this.tripDayComponents) return undefined;
+    
+    return this.tripDayComponents.find(component => {
+      const componentDate = new Date(component.currentDate);
+      return componentDate.getFullYear() === date.getFullYear() &&
+             componentDate.getMonth() === date.getMonth() &&
+             componentDate.getDate() === date.getDate();
+    });
+  }
+
+  // Remove the saveSuggestions method as it's no longer needed
 }

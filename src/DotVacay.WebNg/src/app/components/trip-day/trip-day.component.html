@@ -1,12 +1,24 @@
 <div class="card mb-3">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0">{{ currentDate | date:'fullDate' }}</h5>
-    <button class="btn btn-primary btn-sm" (click)="openAddPoiModal()">
-      <i class="bi bi-plus"></i> Add Point of Interest
-    </button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" (click)="generateAiSuggestions()">
+        <i class="bi bi-robot"></i> AI Suggestions
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openAddPoiModal()">
+        <i class="bi bi-plus"></i> Add Point of Interest
+      </button>
+    </div>
   </div>
   
   <div class="card-body">
+    <div *ngIf="isGeneratingSuggestions" class="text-center mb-3">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <span class="ms-2">Generating AI suggestions...</span>
+    </div>
+    
     <div *ngIf="pointsOfInterest.length === 0" class="text-center text-muted py-3">
       No points of interest for this day. Click "Add Point of Interest" to get started.
     </div>
@@ -21,3 +33,4 @@
     </div>
   </div>
 </div>
+
