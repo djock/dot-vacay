@@ -1,6 +1,24 @@
 <div class="card mb-3">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">{{ currentDate | date:'fullDate' }}</h5>
+    <div class="d-flex align-items-center">
+      <h5 class="mb-0 me-3">{{ currentDate | date:'fullDate' }}</h5>
+      
+      <!-- Weather Forecast -->
+      <div *ngIf="showWeather" class="d-flex align-items-center ms-2">
+        <div *ngIf="isLoadingWeather" class="spinner-border spinner-border-sm text-secondary" role="status">
+          <span class="visually-hidden">Loading weather...</span>
+        </div>
+        
+        <div *ngIf="!isLoadingWeather && weatherForecast && weatherForecast.daily" class="d-flex align-items-center">
+          <i [class]="'bi ' + getWeatherIcon() + ' fs-5 me-1 text-primary'"></i>
+          <span class="text-muted small">
+            {{ weatherForecast.daily.temperature_2m_min[0] | number:'1.0-0' }}° - 
+            {{ weatherForecast.daily.temperature_2m_max[0] | number:'1.0-0' }}°C
+          </span>
+        </div>
+      </div>
+    </div>
+    
     <div class="d-flex gap-2">
       <button class="btn btn-outline-primary btn-sm" (click)="generateAiSuggestions()">
         <i class="bi bi-robot"></i> AI Suggestions

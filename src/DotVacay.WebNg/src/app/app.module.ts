@@ -7,6 +7,7 @@ import { ApiService } from './services/api.service';
 import { TripService } from './services/trip.service';
 import { AiSuggestionService } from './services/ai-suggestion.service';
 import { PointOfInterestService } from './services/point-of-interest.service';
+import { WeatherService } from './services/weather.service';
 
 @NgModule({
   declarations: [
@@ -21,10 +22,12 @@ import { PointOfInterestService } from './services/point-of-interest.service';
     ApiService,
     TripService,
     AiSuggestionService,
-    PointOfInterestService
+    PointOfInterestService,
+    WeatherService
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
 
 

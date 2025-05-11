@@ -54,6 +54,8 @@
           [currentDate]="day" 
           [pointsOfInterest]="getPointsOfInterestForDay(day)"
           [tripLocation]="trip.title"
+          [tripLatitude]="trip.latitude"
+          [tripLongitude]="trip.longitude"
           (onAddPoi)="openAddPoiModal($event)"
           (onRefresh)="loadTripDetails()"
           (onEditPoi)="openEditPoiModal($event)"
