@@ -1,20 +1,17 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
 import { EditTripModel } from '../../models/create-trip.model';
 import { TripListItemModel } from '../../models/trip-list-item.model';
-import { AppHeaderComponent } from "../../components/app-header/app-header.component";
 import { EditTripModal } from "../../components/edit-trip-modal/edit-trip-modal.component";
 import { TripListItemComponent } from "../../components/trip-list-item/trip-list-item.component"; 
-
-declare var bootstrap: any;
 
 @Component({
   selector: 'trips-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AppHeaderComponent, EditTripModal, TripListItemComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EditTripModal, TripListItemComponent],
   templateUrl: './trips-list.component.html',
   styleUrls: ['./trips-list.component.css']
 })
@@ -24,20 +21,12 @@ export class TripsListComponent implements OnInit {
   onEditTrip: EditTripModel = new EditTripModel();
   errorMessage: string = '';
   successMessage: string = '';
-  private modalInstance: any;
+  isTripModalOpen: boolean = false;
 
   constructor(private tripService: TripService) {}
 
-  @ViewChild('editTripModal') editTripModalElement!: ElementRef;
-
   ngOnInit(): void {
     this.loadTrips();
-  }
-
-  ngAfterViewInit(): void {
-    if (this.editTripModalElement) {
-      this.modalInstance = new bootstrap.Modal(this.editTripModalElement.nativeElement);
-    }
   }
 
   loadTrips(): void {
@@ -57,15 +46,11 @@ export class TripsListComponent implements OnInit {
   }
 
   openEditTripModal(): void {
-    if (this.modalInstance) {
-      this.modalInstance.show();
-    }
+    this.isTripModalOpen = true;
   }
 
   closeEditTripModal(): void {
-    if (this.modalInstance) {
-      this.modalInstance.hide();
-    }
+    this.isTripModalOpen = false;
   }
 
   onTripCreated(result: any): void {

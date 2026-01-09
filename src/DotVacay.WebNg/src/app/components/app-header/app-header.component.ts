@@ -11,14 +11,29 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./app-header.component.css']
 })
 export class AppHeaderComponent {
+  isMenuOpen: boolean = false;
+
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
 
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen = false;
+  }
+
   logout(event: Event): void {
     event.preventDefault();
     this.authService.logout();
+    this.closeMenu();
     this.router.navigate(['/']);
   }
 }

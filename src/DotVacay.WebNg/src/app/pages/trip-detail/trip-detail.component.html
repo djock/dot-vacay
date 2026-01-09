@@ -1,57 +1,59 @@
-<app-header></app-header>
+<div *ngIf="errorMessage" class="mx-auto mt-6 max-w-5xl rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+  {{ errorMessage }}
+</div>
+<div *ngIf="successMessage" class="mx-auto mt-6 max-w-5xl rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+  {{ successMessage }}
+</div>
 
-<div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
-<div *ngIf="successMessage" class="alert alert-success text-center">{{ successMessage }}</div>
-
-<div class="container mt-5" *ngIf="loading">
-  <div class="text-center">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
+<div class="mx-auto max-w-5xl px-6 py-16" *ngIf="loading">
+  <div class="flex items-center justify-center">
+    <div class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-500"></div>
   </div>
 </div>
 
-<div class="position-relative">
-  <div class="trip-banner" style="height: 400px; overflow: hidden; position: relative;">
-    <img src="https://picsum.photos/seed/{{trip?.id}}/1920/1080" class="w-100 h-100" style="object-fit: cover;" alt="Trip Banner">
-    <div class="overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);"></div>
+<div *ngIf="!loading && trip">
+  <div class="h-80 w-full overflow-hidden bg-slate-200">
+    <img src="https://picsum.photos/seed/{{trip?.id}}/1920/1080" class="h-full w-full object-cover opacity-80" alt="Trip Banner">
   </div>
 
-  <div class="container position-absolute" style="bottom: -80px; left: 0; right: 0; z-index: 10;" *ngIf="!loading && trip">
-    <div class="row">
-      <div class="col-12">
-        <div class="bg-white p-4 shadow-sm rounded">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">{{ trip.title }}</h2>
-            <div class="d-flex gap-2">
-              <button *ngIf="userIsOwner" class="btn btn-danger" (click)="deleteTrip()">
-                <i class="bi bi-trash"></i>
-              </button>
-              <button *ngIf="!userIsOwner" class="btn btn-warning" (click)="leaveTrip()">
-                <i class="bi bi-box-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-          <p class="text-muted">
+  <div class="relative mx-auto -mt-24 max-w-5xl px-6">
+    <div class="rounded-4xl border border-white/20 bg-white/90 p-10 shadow-elevated backdrop-blur-xl">
+      <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h1 class="text-4xl font-black text-slate-900 md:text-5xl">{{ trip.title }}</h1>
+          <p class="mt-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
             {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
           </p>
-          <p>{{ trip.description }}</p>
+          <p class="mt-4 text-base font-medium text-slate-500">{{ trip.description }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button
+            *ngIf="userIsOwner"
+            class="h-11 rounded-2xl bg-slate-100 px-4 text-sm font-semibold text-slate-700 shadow-md transition-all duration-300 hover:bg-slate-200"
+            (click)="deleteTrip()"
+          >
+            Delete Trip
+          </button>
+          <button
+            *ngIf="!userIsOwner"
+            class="h-11 rounded-2xl bg-slate-100 px-4 text-sm font-semibold text-slate-700 shadow-md transition-all duration-300 hover:bg-slate-200"
+            (click)="leaveTrip()"
+          >
+            Leave Trip
+          </button>
         </div>
       </div>
     </div>
-  </div>
-</div>
-<div style="margin-top: 100px;"></div>
 
-<!-- Daily Itinerary -->
-<div class="container mt-5" *ngIf="!loading && trip">
-  <div class="row">
-    <div class="col-12">
-      <h3 class="mb-3">Daily Itinerary</h3>
-        
-      <div *ngFor="let day of tripDays">
-        <trip-day 
-          [currentDate]="day" 
+    <div class="relative mt-16 border-l-2 border-slate-100 pb-24 pl-8">
+      <div class="mb-8">
+        <h2 class="text-2xl font-black text-slate-900">Daily Itinerary</h2>
+        <p class="mt-1 text-sm font-medium text-slate-500">Build a timeline for every day of your trip.</p>
+      </div>
+
+      <div *ngFor="let day of tripDays" class="mb-16 last:mb-0">
+        <trip-day
+          [currentDate]="day"
           [pointsOfInterest]="getPointsOfInterestForDay(day)"
           [tripLocation]="trip.title"
           [tripLatitude]="trip.latitude"
@@ -62,33 +64,61 @@
           (onGenerateAiSuggestions)="generateDayAiSuggestions($event)">
         </trip-day>
       </div>
-        
-      <div *ngIf="tripDays.length === 0" class="alert alert-info">
-        No dates available for this trip. Please set start and end dates.
+
+      <div *ngIf="tripDays.length === 0" class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+        <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl text-brand-500 shadow-soft">+</div>
+        <p class="text-lg font-semibold text-slate-700">No dates available</p>
+        <p class="mt-1 text-sm text-slate-500">Set your start and end dates to build the itinerary.</p>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" #editPoiModal id="editPoiModal" tabindex="-1" aria-labelledby="editPoiModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editPoiModalLabel">
-          {{ selectedPoi ? 'Edit Point of Interest' : 'Add Point of Interest' }}
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <edit-poi-modal 
-          [tripId]="tripId" 
-          [selectedDate]="selectedDate" 
-          [poiToEdit]="selectedPoi" 
-          (onEditPoi)="onPoiSaved($event)" 
-          (onClose)="closeEditTripModal()">
-        </edit-poi-modal>
-      </div>
+<div *ngIf="isPoiDrawerOpen" class="fixed inset-0 z-[100] flex justify-end overflow-hidden">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="closeEditTripModal()"></div>
+  <div class="relative flex h-full w-full max-w-md translate-x-0 flex-col bg-white shadow-elevated transition-all duration-300">
+    <div class="flex items-center justify-between border-b border-slate-100 p-6">
+      <h2 class="text-xl font-black uppercase tracking-tight text-slate-900">
+        {{ selectedPoi ? 'Edit Point' : 'Add Point' }}
+      </h2>
+      <button
+        type="button"
+        class="rounded-full p-2 text-slate-500 transition-all duration-300 hover:bg-slate-100"
+        (click)="closeEditTripModal()"
+      >
+        <span class="text-2xl">&times;</span>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6">
+      <edit-poi-modal
+        [tripId]="tripId"
+        [selectedDate]="selectedDate"
+        [poiToEdit]="selectedPoi"
+        (onEditPoi)="onPoiSaved($event)"
+        (onClose)="closeEditTripModal()">
+      </edit-poi-modal>
     </div>
   </div>
-  </div>
+</div>
 
+<div class="fixed bottom-0 left-0 right-0 z-[60] flex items-center justify-between border-t border-slate-100 bg-white/90 px-6 py-3 backdrop-blur-lg md:hidden">
+  <a routerLink="/trips" class="flex h-11 flex-col items-center justify-center gap-1 text-brand-500 transition-all duration-300">
+    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M4 6h16M4 12h10M4 18h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="text-[10px] font-bold uppercase">Plan</span>
+  </a>
+  <button class="flex h-11 flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300">
+    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M3 11l9-7 9 7-9 7-9-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="text-[10px] font-bold uppercase">Map</span>
+  </button>
+  <button class="flex h-11 flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300">
+    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M6 4h9l3 3v13H6z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M9 8h6M9 12h6M9 16h3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="text-[10px] font-bold uppercase">Docs</span>
+  </button>
+</div>

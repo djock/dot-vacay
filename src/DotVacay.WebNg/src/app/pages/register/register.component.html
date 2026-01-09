@@ -1,64 +1,94 @@
-<!DOCTYPE html>
+<div class="page-fade relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden bg-slate-50 p-6">
+  <div class="absolute left-0 top-0 h-72 w-72 -translate-x-16 -translate-y-20 rounded-full bg-brand-50 blur-3xl opacity-60"></div>
+  <div class="absolute bottom-0 right-0 h-72 w-72 translate-x-16 translate-y-12 rounded-full bg-blue-50 blur-3xl opacity-60"></div>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
+  <div class="z-10 w-full max-w-[440px] rounded-[2.5rem] border border-white bg-white p-10 shadow-elevated">
+    <div class="mb-10 text-center">
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg shadow-brand-500/20">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-black tracking-tight text-slate-900">Create account</h1>
+      <p class="mt-2 font-medium text-slate-500">Start planning your next adventure.</p>
+    </div>
 
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card mt-5">
-          <div class="card-body">
-            <h2 class="card-title text-center mb-4">Create Account</h2>
+    <div *ngIf="errorMessage" class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorMessage }}
+    </div>
 
-            <div *ngIf="errorMessage" class="alert alert-danger">
-              {{ errorMessage }}
-            </div>
-
-            <form (ngSubmit)="onSubmit()">
-              <div class="mb-3">
-                <label for="firstName" class="form-label">First Name</label>
-                <input [(ngModel)]="firstName" name="firstName" id="firstName" class="form-control" />
-              </div>
-
-              <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input [(ngModel)]="lastName" name="lastName" id="lastName" class="form-control" />
-              </div>
-
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input [(ngModel)]="email" name="email" id="email" class="form-control" type="email" />
-              </div>
-
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input [(ngModel)]="password" name="password" id="password" class="form-control" type="password" />
-              </div>
-
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input [(ngModel)]="confirmPassword" name="confirmPassword" id="confirmPassword" class="form-control" type="password" />
-              </div>
-
-              <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ isLoading ? 'Registering...' : 'Register' }}
-                </button>
-              </div>
-            </form>
-
-            <div class="mt-3 text-center">
-              <p>Already have an account? <a routerLink="/login">Log in</a></p>
-            </div>
-          </div>
+    <form (ngSubmit)="onSubmit()" class="space-y-5">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="space-y-2">
+          <label for="firstName" class="ml-1 text-xs font-bold uppercase tracking-wider text-slate-400">First name</label>
+          <input
+            [(ngModel)]="firstName"
+            name="firstName"
+            id="firstName"
+            class="w-full rounded-2xl border border-transparent bg-slate-50 px-5 py-4 font-medium text-slate-900 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white"
+          />
+        </div>
+        <div class="space-y-2">
+          <label for="lastName" class="ml-1 text-xs font-bold uppercase tracking-wider text-slate-400">Last name</label>
+          <input
+            [(ngModel)]="lastName"
+            name="lastName"
+            id="lastName"
+            class="w-full rounded-2xl border border-transparent bg-slate-50 px-5 py-4 font-medium text-slate-900 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white"
+          />
         </div>
       </div>
+
+      <div class="space-y-2">
+        <label for="email" class="ml-1 text-xs font-bold uppercase tracking-wider text-slate-400">Email address</label>
+        <input
+          [(ngModel)]="email"
+          name="email"
+          id="email"
+          type="email"
+          placeholder="name@example.com"
+          class="w-full rounded-2xl border border-transparent bg-slate-50 px-5 py-4 font-medium text-slate-900 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label for="password" class="ml-1 text-xs font-bold uppercase tracking-wider text-slate-400">Password</label>
+        <input
+          [(ngModel)]="password"
+          name="password"
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          class="w-full rounded-2xl border border-transparent bg-slate-50 px-5 py-4 font-medium text-slate-900 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label for="confirmPassword" class="ml-1 text-xs font-bold uppercase tracking-wider text-slate-400">Confirm password</label>
+        <input
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          id="confirmPassword"
+          type="password"
+          placeholder="••••••••"
+          class="w-full rounded-2xl border border-transparent bg-slate-50 px-5 py-4 font-medium text-slate-900 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white"
+        />
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="isLoading"
+        class="w-full rounded-2xl bg-slate-900 py-4 text-lg font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {{ isLoading ? 'Registering...' : 'Create account' }}
+      </button>
+    </form>
+
+    <div class="mt-8 border-t border-slate-100 pt-8 text-center">
+      <p class="font-medium text-slate-500">
+        Already have an account?
+        <a routerLink="/login" class="font-bold text-brand-500 hover:underline">Log in</a>
+      </p>
     </div>
   </div>
-</body>
-</html>
+</div>

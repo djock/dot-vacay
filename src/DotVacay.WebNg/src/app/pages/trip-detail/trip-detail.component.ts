@@ -1,16 +1,13 @@
-import { Component, OnInit, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
 import { FormsModule } from '@angular/forms';
-import { AppHeaderComponent } from "../../components/app-header/app-header.component";
 import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
 import { AiSuggestionService, PoiSuggestion } from '../../services/ai-suggestion.service';
 import { PointOfInterestService } from '../../services/point-of-interest.service';
-
-declare var bootstrap: any;
 
 @Component({
   selector: 'trip-detail',
@@ -19,7 +16,6 @@ declare var bootstrap: any;
     CommonModule, 
     FormsModule, 
     RouterModule, 
-    AppHeaderComponent,
     EditPoiModal,
     TripDayComponent
   ],
@@ -37,9 +33,9 @@ export class TripDetailComponent implements OnInit {
   successMessage: string = '';
   loading: boolean = true;
   tripDays: Date[] = [];
-  private modalInstance: any;
   selectedPoi: PointOfInterest | null = null;
   selectedDate: Date | null = null;
+  isPoiDrawerOpen: boolean = false;
   
   // Add these properties for AI testing
   aiTestLoading: boolean = false;
@@ -56,19 +52,11 @@ export class TripDetailComponent implements OnInit {
     private pointOfInterestService: PointOfInterestService
   ) { }
 
-  @ViewChild('editPoiModal') editPoiModal!: ElementRef;
-
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tripId = params['id'];
       this.loadTripDetails();
     });
-  }
-
-  ngAfterViewInit(): void {
-    if (this.editPoiModal) {
-      this.modalInstance = new bootstrap.Modal(this.editPoiModal.nativeElement);
-    }
   }
 
   loadTripDetails(): void {
@@ -137,30 +125,17 @@ export class TripDetailComponent implements OnInit {
   openAddPoiModal(date: Date): void {
     this.selectedDate = date; // Set the selected date
     this.selectedPoi = null; // Clear selected POI when adding new
-    if (this.modalInstance) {
-      this.modalInstance.show();
-    }
+    this.isPoiDrawerOpen = true;
   }
 
   openEditPoiModal(poi: PointOfInterest): void {
     this.selectedPoi = poi;
     this.selectedDate = null; // Clear selectedDate when editing existing POI
-    
-    if (this.modalInstance) {
-      this.modalInstance.show();
-    } else {
-      // Try to initialize the modal if it wasn't initialized
-      if (this.editPoiModal) {
-        this.modalInstance = new bootstrap.Modal(this.editPoiModal.nativeElement);
-        this.modalInstance.show();
-      }
-    }
+    this.isPoiDrawerOpen = true;
   }
 
   closeEditTripModal(): void {
-    if (this.modalInstance) {
-      this.modalInstance.hide();
-    }
+    this.isPoiDrawerOpen = false;
   }
 
   deletePointOfInterest(poi: PointOfInterest): void {
@@ -169,8 +144,9 @@ export class TripDetailComponent implements OnInit {
     }
   }
 
-  onPoiSaved(success: boolean): void {
-    if (success) {
+  onPoiSaved(result: { success?: boolean } | boolean): void {
+    const isSuccess = typeof result === 'boolean' ? result : !!result?.success;
+    if (isSuccess) {
       this.closeEditTripModal();
       this.loadTripDetails();
       this.successMessage = 'Point of interest saved successfully';

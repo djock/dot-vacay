@@ -1,21 +1,53 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-<header class="header d-flex justify-content-between align-items-center p-3">
-  <div class="logo">
-    <a routerLink="/trips" class="text-decoration-none text-primary">
-      <h3 class="m-0">DotVacay</h3>
+<nav class="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <a routerLink="/" class="flex items-center gap-2">
+      <div class="h-8 w-8 rounded-lg bg-brand-500"></div>
+      <span class="text-xl font-black tracking-tighter text-slate-900 uppercase">DotVacay</span>
     </a>
-  </div>
-  <div>
-    <div class="dropdown">
-      <button class="btn btn-primary" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-person-circle"></i>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end" >
-        <li><a class="dropdown-item" routerLink="/profile">My Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item btn-error" href="#" (click)="logout($event)">Logout</a></li>
-      </ul>
+
+    <div class="flex items-center gap-4">
+      <ng-container *ngIf="!isAuthenticated">
+        <a routerLink="/login" class="text-sm font-bold text-slate-600 hover:text-brand-500 transition-all duration-300">
+          Log in
+        </a>
+        <a
+          routerLink="/register"
+          class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-brand-600 transition-all duration-300"
+        >
+          Sign Up
+        </a>
+      </ng-container>
+
+      <div *ngIf="isAuthenticated" class="relative">
+        <button
+          type="button"
+          (click)="toggleMenu()"
+          class="flex items-center gap-3 rounded-full border border-slate-200 p-1 pr-4 transition-all duration-300 hover:shadow-soft"
+        >
+          <div class="h-8 w-8 rounded-full bg-slate-200"></div>
+          <span class="text-sm font-bold text-slate-700">My Account</span>
+        </button>
+
+        <div
+          *ngIf="isMenuOpen"
+          class="absolute right-0 mt-3 w-48 rounded-2xl border border-slate-100 bg-white p-2 shadow-elevated"
+        >
+          <a
+            routerLink="/profile"
+            (click)="closeMenu()"
+            class="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all duration-300"
+          >
+            My Profile
+          </a>
+          <button
+            type="button"
+            class="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all duration-300"
+            (click)="logout($event)"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-</header>
+</nav>

@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: ./src
+      dockerfile: DotVacay.API/Dockerfile
+    container_name: dotvacay-backend
+    ports:
+      - "5111:5111"
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - dotvacay_db:/app/data
+    environment:
+      - DOTVACAY_JWT_KEY=${DOTVACAY_JWT_KEY}
+      - DOTVACAY_JWT_ISSUER=${DOTVACAY_JWT_ISSUER}
+      - DOTVACAY_JWT_AUDIENCE=${DOTVACAY_JWT_AUDIENCE}
+      - DOTVACAY_JWT_EXPIREDAYS=${DOTVACAY_JWT_EXPIREDAYS:-30}
+      - DOTVACAY_CORS_ORIGINS=${DOTVACAY_CORS_ORIGINS}
+      - DOTVACAY_CONNECTION_STRING=Data Source=/app/data/dotvacay.db
+      - DOTVACAY_DB_PATH=${DOTVACAY_DB_PATH:-/app/data/dotvacay.db}
+      - DOTVACAY_OPENAI_APIKEY=${DOTVACAY_OPENAI_APIKEY:-}
+    networks:
+      - dotvacay-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5111/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./src/DotVacay.WebNg
+      dockerfile: Dockerfile.dev
+    container_name: dotvacay-frontend
+    ports:
+      - "50316:50316"
+    volumes:
+      - ./src/DotVacay.WebNg:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    networks:
+      - dotvacay-network
+
+networks:
+  dotvacay-network:
+    driver: bridge
+
+volumes:
+  dotvacay_db:
+    driver: local

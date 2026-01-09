@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/user-profile.model';
 import * as CryptoJS from 'crypto-js';
@@ -8,7 +7,7 @@ import * as CryptoJS from 'crypto-js';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent],
+  imports: [CommonModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })

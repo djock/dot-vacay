@@ -84,7 +84,61 @@ DotVacay/
 │       └── angular.json           # Angular configuration
 ```
 
-## Getting Started
+## Docker Development Setup
+
+### Prerequisites
+- Docker Desktop for Mac (or Docker CLI with Colima/OrbStack)
+- Copy `.env.example` to `.env` and set your JWT key
+
+### Quick Start
+
+1. **Generate JWT key** (in .env file):
+   ```bash
+   # Generate a random 256-bit key
+   openssl rand -base64 32
+   ```
+
+2. **Create .env file**:
+   ```bash
+   cp .env.example .env
+   # Edit .env and replace DOTVACAY_JWT_KEY with generated key
+   ```
+
+3. **Start containers**:
+   ```bash
+   docker compose up --build
+   ```
+
+4. **Access application**:
+   - Frontend: http://localhost:50316
+   - Backend API: http://localhost:5111/api
+   - API Documentation: http://localhost:5111/swagger
+   - Health Check: http://localhost:5111/api/health
+
+### Development Workflow
+
+- **Hot Reload**: Code changes are automatically reflected in both backend and frontend
+- **Backend Logs**: `docker compose logs -f backend`
+- **Frontend Logs**: `docker compose logs -f frontend`
+- **Stop Containers**: `docker compose down`
+- **Clean Build**: `docker compose down --volumes && docker compose up --build`
+
+### Database
+
+- SQLite database persists in Docker volume: `dotvacay_db`
+- Database file location in container: `/app/data/dotvacay.db`
+- Migrations run automatically on container startup
+
+### Troubleshooting
+
+If hot reload isn't working:
+- Backend: Check that `DOTNET_USE_POLLING_FILE_WATCHER=1` is set (included in Dockerfile)
+- Ensure you're on macOS (Apple Silicon) - Dockerfile uses `dotnet/sdk:9.0` which supports arm64
+
+If CORS errors occur:
+- Ensure `http://frontend:50316` is in `DOTVACAY_CORS_ORIGINS` in .env
+
+### Traditional Development Setup
 
 ### Prerequisites
 - .NET 9.0 SDK
@@ -130,7 +184,8 @@ DotVacay uses environment variables for configuration, especially for sensitive 
 
 ### Required Environment Variables
 
-- `DOTVACAY_OPENAI_APIKEY`: Your OpenAI API key
+- `DOTVACAY_JWT_KEY`: Your JWT signing key (generate with `openssl rand -base64 32`)
+- `DOTVACAY_OPENAI_APIKEY`: Your OpenAI API key (optional - AI features disabled in Docker mode)
 
 ### Setting Environment Variables
 
@@ -184,4 +239,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Created by Ionut Mocanu
 - Inspired by Wanderlog and built as a learning project
-

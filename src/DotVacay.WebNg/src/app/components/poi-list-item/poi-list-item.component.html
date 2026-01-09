@@ -1,64 +1,61 @@
-<div class="timeline-item mb-3" *ngIf="poi">
-  <div class="d-flex align-items-start">
-    <!-- Left: Icon -->
-    <div class="timeline-icon me-3">
-      <div [ngSwitch]="poi.type">
-        <i *ngSwitchCase="PointOfInterestType.Accomodation" class="bi bi-building text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Transportation" class="bi bi-car-front text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Restaurant" class="bi bi-cup-hot text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Coffee" class="bi bi-cup-hot text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Museum" class="bi bi-geo-alt text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Landmark" class="bi bi-compass text-primary"></i>
-        <i *ngSwitchCase="PointOfInterestType.Shopping" class="bi bi-cart text-primary"></i>
-        <i *ngSwitchDefault class="bi bi-geo-alt text-primary"></i>
-      </div>
-    </div>
-
-    <!-- Middle: Content -->
-    <div class="timeline-content flex-grow-1">
-      <h6 class="mb-1">
-        {{ poi.title }}
-        <!-- For Accommodation type with special check-in/check-out display -->
-        <ng-container *ngIf="poiType === PointOfInterestType.Accomodation && poi.startDate && poi.endDate">
-          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && isEndDateInCurrentDay()">
-            (Check in: {{ poi.startDate | date:'shortTime' }}, Check out: {{ poi.endDate | date:'shortTime' }})
-          </small>
-          <small class="text-muted ms-2" *ngIf="isStartDateInCurrentDay() && !isEndDateInCurrentDay()">
-            (Check in: {{ poi.startDate | date:'shortTime' }})
-          </small>
-          <small class="text-muted ms-2" *ngIf="!isStartDateInCurrentDay() && isEndDateInCurrentDay()">
-            (Check out: {{ poi.endDate | date:'shortTime' }})
-          </small>
-        </ng-container>
-        
-        <!-- For all other types, show regular time display -->
-        <small class="text-muted ms-2" *ngIf="poiType !== PointOfInterestType.Accomodation && poi.startDate && poi.endDate && (isStartDateInCurrentDay() || isEndDateInCurrentDay())">
-          ({{ poi.startDate | date:'shortTime' }} - {{ poi.endDate | date:'shortTime' }})
-        </small>
-      </h6>
-      <p *ngIf="poi.description" class="mb-0 text-muted">{{ poi.description }}</p>
-      <div *ngIf="poi.latitude && poi.longitude && poi.latitude !== 0 && poi.longitude !== 0" class="mt-2">
-        <a [href]="'https://www.google.com/maps?q=' + poi.latitude + ',' + poi.longitude"
-           target="_blank"
-           class="text-decoration-none">
-          <i class="bi bi-geo-alt"></i> View on Map
-        </a>
-      </div>
-    </div>
-
-    <!-- Right: Buttons -->
-    <div class="d-flex gap-2 ms-auto">
-      <button type="button"
-              class="btn btn-sm btn-outline-primary edit-poi"
-              (click)="openEditPoiModal(); $event.stopPropagation()">
-        <i class="bi bi-pencil"></i>
-      </button>
-      <button type="button"
-              class="btn btn-sm btn-outline-danger"
-              (click)="deletePointOfInterest(); $event.stopPropagation()">
-        <i class="bi bi-trash"></i>
-      </button>
+<div class="group flex flex-col gap-4 border-b border-slate-50 bg-white p-4 transition-all duration-300 sm:rounded-3xl sm:border sm:border-slate-100 sm:shadow-soft sm:hover:shadow-md sm:flex-row sm:items-center" *ngIf="poi">
+  <div class="flex items-center justify-between sm:flex-col sm:items-start sm:justify-center">
+    <span *ngIf="poi.startDate" class="sm:hidden rounded-full bg-brand-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-brand-500">
+      {{ poi.startDate | date:'shortTime' }}
+    </span>
+    <div class="ml-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-[10px] font-bold text-slate-500 sm:ml-0 sm:h-16 sm:w-16">
+      POI
     </div>
   </div>
-</div>
 
+  <div class="flex-1">
+    <h4 class="text-lg font-bold text-slate-900">{{ poi.title }}</h4>
+    <p *ngIf="poi.description" class="mt-1 text-sm text-slate-500">{{ poi.description }}</p>
+
+    <div *ngIf="poiType === PointOfInterestType.Accomodation && poi.startDate && poi.endDate" class="mt-2 text-xs font-semibold text-slate-400">
+      <span *ngIf="isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+        Check in: {{ poi.startDate | date:'shortTime' }}, Check out: {{ poi.endDate | date:'shortTime' }}
+      </span>
+      <span *ngIf="isStartDateInCurrentDay() && !isEndDateInCurrentDay()">
+        Check in: {{ poi.startDate | date:'shortTime' }}
+      </span>
+      <span *ngIf="!isStartDateInCurrentDay() && isEndDateInCurrentDay()">
+        Check out: {{ poi.endDate | date:'shortTime' }}
+      </span>
+    </div>
+
+    <div *ngIf="poiType !== PointOfInterestType.Accomodation && poi.startDate && poi.endDate && (isStartDateInCurrentDay() || isEndDateInCurrentDay())" class="mt-2 text-xs font-semibold text-slate-400">
+      {{ poi.startDate | date:'shortTime' }} - {{ poi.endDate | date:'shortTime' }}
+    </div>
+
+    <a
+      *ngIf="poi.latitude && poi.longitude && poi.latitude !== 0 && poi.longitude !== 0"
+      [href]="'https://www.google.com/maps?q=' + poi.latitude + ',' + poi.longitude"
+      target="_blank"
+      class="mt-3 inline-flex items-center text-xs font-semibold text-brand-500 transition-all duration-300 hover:text-brand-600"
+    >
+      View on map
+    </a>
+  </div>
+
+  <span *ngIf="poi.startDate" class="hidden text-xs font-black uppercase text-slate-300 sm:block">
+    {{ poi.startDate | date:'shortTime' }}
+  </span>
+
+  <div class="flex items-center gap-2 sm:ml-auto">
+    <button
+      type="button"
+      class="h-11 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-600 transition-all duration-300 hover:bg-slate-50"
+      (click)="openEditPoiModal(); $event.stopPropagation()"
+    >
+      Edit
+    </button>
+    <button
+      type="button"
+      class="h-11 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-600 transition-all duration-300 hover:bg-slate-50"
+      (click)="deletePointOfInterest(); $event.stopPropagation()"
+    >
+      Delete
+    </button>
+  </div>
+</div>

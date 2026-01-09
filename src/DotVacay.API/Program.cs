@@ -28,10 +28,8 @@ var builderConfiguration = builder.Configuration;
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlite(
-        builderConfiguration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("DotVacay.Infrastructure")
-    );
+    var connectionString = builderConfiguration.GetConnectionString("DefaultConnection") ?? "Data Source=/app/data/dotvacay.db";
+    options.UseSqlite(connectionString, b => b.MigrationsAssembly("DotVacay.Infrastructure"));
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -70,9 +68,11 @@ builder.Services.AddScoped<ITripAccessHelperService, TripAccessHelperService>();
 builder.Services.AddScoped<IPointOfInterestRepository, PointOfInterestRepository>();
 builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAiSuggestionService, AiSuggestionService>();
+// AI service disabled for Docker development
+// builder.Services.AddScoped<IAiSuggestionService, AiSuggestionService>();
 
 builder.Services.AddHttpClient();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddOpenApi();
 
@@ -106,36 +106,36 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowWebApp", policy => {
-        policy.WithOrigins(
-            builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? 
-            ["http://localhost:5035", "http://localhost:7076"]
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials();  // Add this if you're using cookies
+        var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+            ?? ["http://localhost:5035", "http://localhost:7076", "http://localhost:50316", "http://frontend:50316"];
+
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
-if(app.Environment.IsProduction())
+// Run database migrations on startup (works in both dev and production)
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var services = scope.ServiceProvider;
+    try
     {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            context.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating the database.");
-        }
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Database migrations completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+        throw;
     }
 }
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -158,5 +158,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/api/health");
 
 app.Run();

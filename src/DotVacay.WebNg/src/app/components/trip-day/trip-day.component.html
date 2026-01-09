@@ -1,54 +1,56 @@
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-      <h5 class="mb-0 me-3">{{ currentDate | date:'fullDate' }}</h5>
-      
-      <!-- Weather Forecast -->
-      <div *ngIf="showWeather" class="d-flex align-items-center ms-2">
-        <div *ngIf="isLoadingWeather" class="spinner-border spinner-border-sm text-secondary" role="status">
-          <span class="visually-hidden">Loading weather...</span>
-        </div>
-        
-        <div *ngIf="!isLoadingWeather && weatherForecast && weatherForecast.daily" class="d-flex align-items-center">
-          <i [class]="'bi ' + getWeatherIcon() + ' fs-5 me-1 text-primary'"></i>
-          <span class="text-muted small">
-            {{ weatherForecast.daily.temperature_2m_min[0] | number:'1.0-0' }}° - 
-            {{ weatherForecast.daily.temperature_2m_max[0] | number:'1.0-0' }}°C
-          </span>
+<div class="relative">
+  <div class="absolute -left-[21px] top-2 h-5 w-5 rounded-full bg-brand-500 ring-4 ring-white"></div>
+
+  <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div class="sticky top-16 z-10 -mx-4 bg-white/90 px-4 py-2 backdrop-blur sm:static sm:bg-transparent sm:px-0 sm:py-0">
+      <div class="flex flex-col gap-2">
+        <h3 class="text-2xl font-black text-slate-900">{{ currentDate | date:'fullDate' }}</h3>
+        <div *ngIf="showWeather" class="flex items-center gap-2 text-sm text-slate-500">
+          <div *ngIf="isLoadingWeather" class="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-brand-500"></div>
+          <div *ngIf="!isLoadingWeather && weatherForecast && weatherForecast.daily" class="flex items-center gap-2">
+            <span class="h-6 w-6 rounded-xl bg-brand-50 text-center text-[10px] font-bold text-brand-500">WX</span>
+            <span>
+              {{ weatherForecast.daily.temperature_2m_min[0] | number:'1.0-0' }}° -
+              {{ weatherForecast.daily.temperature_2m_max[0] | number:'1.0-0' }}°C
+            </span>
+          </div>
         </div>
       </div>
     </div>
-    
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-primary btn-sm" (click)="generateAiSuggestions()">
-        <i class="bi bi-robot"></i> AI Suggestions
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        class="h-11 rounded-2xl border border-brand-500 px-4 text-sm font-semibold text-brand-500 transition-all duration-300 hover:bg-brand-50"
+        (click)="generateAiSuggestions()"
+      >
+        AI Suggestions
       </button>
-      <button class="btn btn-primary btn-sm" (click)="openAddPoiModal()">
-        <i class="bi bi-plus"></i> Add Point of Interest
+      <button
+        class="h-11 rounded-2xl bg-brand-500 px-4 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-brand-600"
+        (click)="openAddPoiModal()"
+      >
+        + Add POI
       </button>
     </div>
   </div>
-  
-  <div class="card-body">
-    <div *ngIf="isGeneratingSuggestions" class="text-center mb-3">
-      <div class="spinner-border spinner-border-sm text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <span class="ms-2">Generating AI suggestions...</span>
-    </div>
-    
-    <div *ngIf="pointsOfInterest.length === 0" class="text-center text-muted py-3">
-      No points of interest for this day. Click "Add Point of Interest" to get started.
-    </div>
-    
-    <div *ngFor="let poi of pointsOfInterest" class="mb-3 p-3 border rounded">
-        <poi-list-item
-          [poi]="poi"
-          [currentDate]="currentDate"
-          (onRefresh)="refreshData()"
-          (onEditPoi)="handleEditPoi($event)">
-        </poi-list-item>
-    </div>
+
+  <div *ngIf="isGeneratingSuggestions" class="mb-4 flex items-center gap-2 text-sm text-brand-500">
+    <div class="h-4 w-4 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"></div>
+    Generating AI suggestions...
+  </div>
+
+  <div *ngIf="pointsOfInterest.length === 0" class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+    <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-2xl text-brand-500 shadow-soft">+</div>
+    <p class="text-sm font-semibold text-slate-700">No points of interest yet</p>
+    <p class="mt-1 text-xs text-slate-500">Add your first stop to start the day.</p>
+  </div>
+
+  <div *ngFor="let poi of pointsOfInterest" class="mb-4">
+    <poi-list-item
+      [poi]="poi"
+      [currentDate]="currentDate"
+      (onRefresh)="refreshData()"
+      (onEditPoi)="handleEditPoi($event)">
+    </poi-list-item>
   </div>
 </div>
-
