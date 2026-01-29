@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { TripListItemModel } from '../models/trip-list-item.model';
+import { TripModel } from '../models/trip.model';
 import { EditTripModel } from '../models/create-trip.model';
 
 interface TripsListResult {
   success: boolean;
-  trips: TripListItemModel[];
+  trips: TripModel[];
   errors?: string[];
 }
 
@@ -48,4 +48,3 @@ export class TripService {
   }
 
 }
-

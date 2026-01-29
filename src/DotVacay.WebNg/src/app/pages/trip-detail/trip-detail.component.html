@@ -68,8 +68,12 @@
       <div *ngIf="tripDays.length === 0" class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
         <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl text-brand-500 shadow-soft">+</div>
         <p class="text-lg font-semibold text-slate-700">No dates available</p>
-        <p class="mt-1 text-sm text-slate-500">Set your start and end dates to build the itinerary.</p>
+        <p class="mt-1 text-sm text-slate-500">Set your start and end dates to build itinerary.</p>
       </div>
+    </div>
+
+    <div class="mt-16 border-l-2 border-slate-100 pb-24 pl-8">
+      <trip-lists-manager [tripId]="tripId"></trip-lists-manager>
     </div>
   </div>
 </div>
@@ -122,3 +126,13 @@
     <span class="text-[10px] font-bold uppercase">Docs</span>
   </button>
 </div>
+
+<confirm-dialog
+  [isOpen]="isDeleteTripConfirmOpen"
+  title="Delete trip?"
+  message="This will permanently remove the trip and all its data."
+  confirmText="Delete trip"
+  cancelText="Cancel"
+  (onConfirm)="confirmDeleteTrip()"
+  (onCancel)="cancelDeleteTrip()"
+></confirm-dialog>

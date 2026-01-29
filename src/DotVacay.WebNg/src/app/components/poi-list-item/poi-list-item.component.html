@@ -59,3 +59,13 @@
     </button>
   </div>
 </div>
+
+<confirm-dialog
+  [isOpen]="isDeleteConfirmOpen"
+  title="Delete point of interest?"
+  message="This will permanently remove this item."
+  confirmText="Delete"
+  cancelText="Cancel"
+  (onConfirm)="confirmDeletePoi()"
+  (onCancel)="cancelDeletePoi()"
+></confirm-dialog>

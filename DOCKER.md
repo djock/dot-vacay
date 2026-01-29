@@ -30,7 +30,7 @@ docker-compose up --build
 
 ### Hot Reload
 - **Backend**: `dotnet watch` automatically recompiles on file changes
-- **Frontend**: Angular dev server automatically rebuilds on file changes
+- **Frontend**: Vite dev server automatically rebuilds on file changes
 - No manual rebuild required!
 
 ### Database Persistence
@@ -95,7 +95,7 @@ docker-compose ps
 │  ┌─────────────────────┐      ┌─────────────────────┐ │
 │  │   Frontend         │─────▶│   Backend          │ │
 │  │   Port: 50316      │      │   Port: 5111       │ │
-│  │   Angular Dev       │      │   .NET 9 API       │ │
+│  │   Vite Dev          │      │   .NET 9 API        │ │
 │  │   Server           │      │   Hot Reload        │ │
 │  │                    │      │   SQLite DB         │ │
 │  └─────────────────────┘      └─────────────────────┘ │
@@ -174,7 +174,7 @@ docker-compose ps
 
 Docker volumes on macOS (Apple Silicon) use file system watchers:
 - Backend: `DOTNET_USE_POLLING_FILE_WATCHER=1` enables polling
-- Frontend: Angular CLI handles file watching automatically
+- Frontend: Vite handles file watching automatically
 - Changes propagate in 1-2 seconds
 
 ## Removing AI Features

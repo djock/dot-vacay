@@ -1,0 +1,66 @@
+<div class="trip-lists-manager">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-bold text-slate-800">Lists</h2>
+    
+    <div *ngIf="!isCreatingList">
+      <button 
+        type="button" 
+        (click)="startCreatingList()"
+        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium flex items-center gap-2 shadow-md hover:shadow-lg"
+      >
+        <i class="bi bi-plus-lg"></i>
+        Create new list
+      </button>
+    </div>
+
+    <div *ngIf="isCreatingList" class="flex gap-2">
+      <input 
+        type="text" 
+        [(ngModel)]="newListTitle"
+        (keyup.enter)="createList()"
+        (keyup.escape)="cancelCreatingList()"
+        placeholder="Enter list name..."
+        class="px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors w-64"
+        autofocus
+      />
+      <button 
+        type="button" 
+        (click)="createList()"
+        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
+      >
+        Create
+      </button>
+      <button 
+        type="button" 
+        (click)="cancelCreatingList()"
+        class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition-colors font-medium"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+  </div>
+
+  <div *ngIf="errorMessage" class="bg-red-50 text-red-700 px-6 py-4 rounded-xl mb-6">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && tripLists.length === 0" class="text-center py-12 bg-white rounded-2xl shadow-soft">
+    <i class="bi bi-list-check text-6xl text-slate-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-slate-600 mb-2">No lists yet</h3>
+    <p class="text-slate-400">Create your first list to keep track of items</p>
+  </div>
+
+  <div *ngIf="!isLoading && tripLists.length > 0" class="space-y-6">
+    <trip-list
+      *ngFor="let tripList of tripLists"
+      [tripList]="tripList"
+      [tripId]="tripId"
+      (onRefresh)="handleRefresh()"
+      (onDelete)="handleListDeleted()"
+    ></trip-list>
+  </div>
+</div>

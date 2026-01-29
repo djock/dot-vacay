@@ -163,6 +163,49 @@ namespace DotVacay.Infrastructure.Migrations
                     b.ToTable("Trips");
                 });
 
+            modelBuilder.Entity("DotVacay.Core.Entities.TripList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TripId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("TripLists");
+                });
+
+            modelBuilder.Entity("DotVacay.Core.Entities.TripListItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsChecked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TripListId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripListId");
+
+                    b.ToTable("TripListItems");
+                });
+
             modelBuilder.Entity("DotVacay.Core.Entities.UserTrip", b =>
                 {
                     b.Property<string>("UserId")
@@ -318,6 +361,24 @@ namespace DotVacay.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DotVacay.Core.Entities.TripList", b =>
+                {
+                    b.HasOne("DotVacay.Core.Entities.Trip", null)
+                        .WithMany("TripLists")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DotVacay.Core.Entities.TripListItem", b =>
+                {
+                    b.HasOne("DotVacay.Core.Entities.TripList", null)
+                        .WithMany("ListItems")
+                        .HasForeignKey("TripListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DotVacay.Core.Entities.UserTrip", b =>
                 {
                     b.HasOne("DotVacay.Core.Entities.Trip", "Trip")
@@ -397,7 +458,14 @@ namespace DotVacay.Infrastructure.Migrations
                 {
                     b.Navigation("PointsOfInterest");
 
+                    b.Navigation("TripLists");
+
                     b.Navigation("UserTrips");
+                });
+
+            modelBuilder.Entity("DotVacay.Core.Entities.TripList", b =>
+                {
+                    b.Navigation("ListItems");
                 });
 #pragma warning restore 612, 618
         }

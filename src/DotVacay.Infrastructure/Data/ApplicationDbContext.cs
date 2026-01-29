@@ -1,13 +1,15 @@
-﻿using DotVacay.Core.Entities;
+using DotVacay.Core.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotVacay.Infrastructure.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
-{
-    public DbSet<Trip> Trips { get; set; }
-    public DbSet<PointOfInterest> PointsOfInterest { get; set; }
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+    {
+        public DbSet<Trip> Trips { get; set; }
+        public DbSet<PointOfInterest> PointsOfInterest { get; set; }
+        public DbSet<TripList> TripLists { get; set; }
+        public DbSet<TripListItem> TripListItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +32,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne<Trip>()
             .WithMany(t => t.PointsOfInterest)
             .HasForeignKey(p => p.TripId);
+
+        modelBuilder.Entity<TripList>()
+            .HasOne<Trip>()
+            .WithMany(t => t.TripLists)
+            .HasForeignKey(tl => tl.TripId);
+
+        modelBuilder.Entity<TripListItem>()
+            .HasOne<TripList>()
+            .WithMany(tl => tl.ListItems)
+            .HasForeignKey(tli => tli.TripListId);
     }
 
 

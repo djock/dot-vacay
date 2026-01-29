@@ -5,6 +5,8 @@ import { TripService } from '../../services/trip.service';
 import { FormsModule } from '@angular/forms';
 import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
 import { TripDayComponent } from "../../components/trip-day/trip-day.component";
+import { TripListsManagerComponent } from "../../components/trip-lists-manager/trip-lists-manager.component";
+import { ConfirmDialogComponent } from "../../components/confirm-dialog/confirm-dialog.component";
 import { PointOfInterest } from '../../models/point-of-interest.model';
 import { AiSuggestionService, PoiSuggestion } from '../../services/ai-suggestion.service';
 import { PointOfInterestService } from '../../services/point-of-interest.service';
@@ -17,7 +19,9 @@ import { PointOfInterestService } from '../../services/point-of-interest.service
     FormsModule, 
     RouterModule, 
     EditPoiModal,
-    TripDayComponent
+    TripDayComponent,
+    TripListsManagerComponent,
+    ConfirmDialogComponent
   ],
   providers: [
     PointOfInterestService
@@ -36,6 +40,7 @@ export class TripDetailComponent implements OnInit {
   selectedPoi: PointOfInterest | null = null;
   selectedDate: Date | null = null;
   isPoiDrawerOpen: boolean = false;
+  isDeleteTripConfirmOpen: boolean = false;
   
   // Add these properties for AI testing
   aiTestLoading: boolean = false;
@@ -155,21 +160,28 @@ export class TripDetailComponent implements OnInit {
   }
 
   deleteTrip(): void {
-    if (confirm('Are you sure you want to delete this trip?')) {
-      this.tripService.deleteTrip(this.tripId).subscribe({
-        next: (result) => {
-          if (result.success) {
-            this.router.navigate(['/trips']);
-          } else if (result.errors?.length) {
-            this.errorMessage = result.errors[0];
-          }
-        },
-        error: (error: any) => {
-          console.error('Failed to delete trip', error);
-          this.errorMessage = error.error?.errors?.[0] || 'Failed to delete trip';
+    this.isDeleteTripConfirmOpen = true;
+  }
+
+  confirmDeleteTrip(): void {
+    this.tripService.deleteTrip(this.tripId).subscribe({
+      next: (result) => {
+        if (result.success) {
+          this.router.navigate(['/trips']);
+        } else if (result.errors?.length) {
+          this.errorMessage = result.errors[0];
         }
-      });
-    }
+      },
+      error: (error: any) => {
+        console.error('Failed to delete trip', error);
+        this.errorMessage = error.error?.errors?.[0] || 'Failed to delete trip';
+      }
+    });
+    this.isDeleteTripConfirmOpen = false;
+  }
+
+  cancelDeleteTrip(): void {
+    this.isDeleteTripConfirmOpen = false;
   }
 
   leaveTrip(): void {

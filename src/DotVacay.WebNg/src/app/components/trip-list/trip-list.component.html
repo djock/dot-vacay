@@ -1,0 +1,75 @@
+<div class="trip-list-card bg-white rounded-2xl shadow-soft p-6 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-2xl font-bold text-slate-800">{{ tripList.title }}</h3>
+    <button 
+      type="button" 
+      (click)="deleteList()"
+      class="text-red-500 hover:text-red-700 transition-colors"
+      title="Delete list"
+    >
+      <i class="bi bi-trash3 text-xl"></i>
+    </button>
+  </div>
+
+  <div *ngIf="tripList.listItems && tripList.listItems.length > 0" class="list-items space-y-2">
+    <trip-list-item
+      *ngFor="let item of tripList.listItems"
+      [tripListItem]="item"
+      [tripId]="tripId"
+      (onRefresh)="handleRefresh()"
+    ></trip-list-item>
+  </div>
+
+  <div *ngIf="!tripList.listItems || tripList.listItems.length === 0" class="text-slate-400 text-sm py-4">
+    No items in this list yet
+  </div>
+
+  <div class="mt-4">
+    <div *ngIf="!isAddingItem">
+      <button 
+        type="button" 
+        (click)="startAddingItem()"
+        class="w-full py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 text-slate-600 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+      >
+        <i class="bi bi-plus-lg"></i>
+        Add item
+      </button>
+    </div>
+
+    <div *ngIf="isAddingItem" class="flex gap-2">
+      <input 
+        type="text" 
+        [(ngModel)]="newItemTitle"
+        (keyup.enter)="addListItem()"
+        (keyup.escape)="cancelAddingItem()"
+        placeholder="Enter item name..."
+        class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+        autofocus
+      />
+      <button 
+        type="button" 
+        (click)="addListItem()"
+        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
+      >
+        Add
+      </button>
+      <button 
+        type="button" 
+        (click)="cancelAddingItem()"
+        class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition-colors font-medium"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<confirm-dialog
+  [isOpen]="isDeleteConfirmOpen"
+  title="Delete list?"
+  message="This will permanently remove the list and its items."
+  confirmText="Delete list"
+  cancelText="Cancel"
+  (onConfirm)="confirmDeleteList()"
+  (onCancel)="cancelDeleteList()"
+></confirm-dialog>

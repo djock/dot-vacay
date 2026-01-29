@@ -1,4 +1,4 @@
-﻿using DotVacay.Core.Enums;
+using DotVacay.Core.Enums;
 
 namespace DotVacay.Core.Entities
 {
@@ -13,5 +13,6 @@ namespace DotVacay.Core.Entities
         public double? Longitude { get; set; }
         public ICollection<UserTrip> UserTrips { get; set; } = [];
         public ICollection<PointOfInterest>? PointsOfInterest { get; set; }
+        public ICollection<TripList>? TripLists { get; set; }
     }
 }

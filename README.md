@@ -40,9 +40,8 @@ DotVacay is a web application designed to help travelers plan and organize their
   - JWT Authentication
 
 - **Frontend**
-  - Angular 19
-  - Bootstrap 5
-  - ngx-bootstrap
+  - React 19 + Vite (main frontend)
+  - Tailwind (via CDN)
   - OpenStreetMap API integration
 
 ## Project Structure
@@ -74,14 +73,8 @@ DotVacay/
 │   │   ├── Views/                 # Razor Views
 │   │   └── Program.cs             # Web Entry Point
 │   │
-│   └── DotVacay.WebNg/            # Angular Web Application
-│       ├── src/                   # Angular source code
-│       │   ├── app/               # Application components
-│       │   │   ├── components/    # UI Component
-│       │   │   ├── pages/         # Pages
-│       │   │   ├── models/        # Models
-│       │   │   └── services/      # Services
-│       └── angular.json           # Angular configuration
+│   ├── DotVacay.WebReact/         # React + Vite Web Application (main)
+│   └── DotVacay.WebNg/            # Angular Web Application (legacy)
 ```
 
 ## Docker Development Setup
@@ -144,7 +137,7 @@ If CORS errors occur:
 - .NET 9.0 SDK
 - SQL Server
 - Node.js 18+ and npm
-- Angular CLI 19+
+- Vite (via npm scripts)
 
 ### Backend Setup
 1. **Clone the repository**
@@ -165,18 +158,18 @@ If CORS errors occur:
    ```
    The API will be available at http://localhost:5111 with Swagger documentation at http://localhost:5111/swagger/index.json
 
-### Frontend Setup
-1. **Install Angular dependencies**
+### Frontend Setup (React)
+1. **Install dependencies**
    ```bash
-   cd src/DotVacay.WebNg
+   cd src/DotVacay.WebReact
    npm install
    ```
 
-2. **Run the Angular application**
+2. **Run the Vite application**
    ```bash
-   npm start
+   npm run dev
    ```
-   The application will be available at http://localhost:4200
+   The application will be available at http://localhost:50316
 
 ## Environment Variables
 

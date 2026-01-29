@@ -1,8 +1,6 @@
 export class TripListItemModel {
-  id: string = '';
+  id: number = 0;
   title: string = '';
-  description: string = '';
-  startDate: Date = new Date();
-  endDate: Date = new Date();
-  isOwner: boolean = false;
+  tripListId: number = 0;
+  isChecked: boolean = false;
 }

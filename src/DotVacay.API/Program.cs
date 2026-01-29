@@ -65,9 +65,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPointOfInterestService, PointOfInterestService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<ITripAccessHelperService, TripAccessHelperService>();
+builder.Services.AddScoped<ITripListService, TripListService>();
+builder.Services.AddScoped<ITripListItemService, TripListItemService>();
 builder.Services.AddScoped<IPointOfInterestRepository, PointOfInterestRepository>();
 builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITripListRepository, TripListRepository>();
+builder.Services.AddScoped<ITripListItemRepository, TripListItemRepository>();
 // AI service disabled for Docker development
 // builder.Services.AddScoped<IAiSuggestionService, AiSuggestionService>();
 

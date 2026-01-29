@@ -4,24 +4,26 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
 import { EditTripModel } from '../../models/create-trip.model';
-import { TripListItemModel } from '../../models/trip-list-item.model';
-import { EditTripModal } from "../../components/edit-trip-modal/edit-trip-modal.component";
-import { TripListItemComponent } from "../../components/trip-list-item/trip-list-item.component"; 
+import { TripModel } from '../../models/trip.model';
+import { EditTripModal } from '../../components/edit-trip-modal/edit-trip-modal.component';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'trips-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EditTripModal, TripListItemComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EditTripModal, ConfirmDialogComponent],
   templateUrl: './trips-list.component.html',
   styleUrls: ['./trips-list.component.css']
 })
 
 export class TripsListComponent implements OnInit {
-  trips: TripListItemModel[] = [];
+  trips: TripModel[] = [];
   onEditTrip: EditTripModel = new EditTripModel();
   errorMessage: string = '';
   successMessage: string = '';
   isTripModalOpen: boolean = false;
+  isDeleteConfirmOpen: boolean = false;
+  pendingDeleteTripId: number | null = null;
 
   constructor(private tripService: TripService) {}
 
@@ -76,5 +78,35 @@ export class TripsListComponent implements OnInit {
     } else {
       this.errorMessage = 'Failed to delete trip';
     }
+  }
+
+  deleteTrip(tripId: number): void {
+    this.pendingDeleteTripId = tripId;
+    this.isDeleteConfirmOpen = true;
+  }
+
+  confirmDeleteTrip(): void {
+    if (this.pendingDeleteTripId === null) {
+      return;
+    }
+    this.tripService.deleteTrip(this.pendingDeleteTripId.toString()).subscribe({
+      next: (result) => {
+        this.onDeleteTrip(result.success);
+        if (!result.success && result.errors?.length) {
+          this.errorMessage = result.errors[0];
+        }
+      },
+      error: (error) => {
+        console.error('Failed to delete trip', error);
+        this.errorMessage = error.error?.errors?.[0] || 'Failed to delete trip';
+      }
+    });
+    this.isDeleteConfirmOpen = false;
+    this.pendingDeleteTripId = null;
+  }
+
+  cancelDeleteTrip(): void {
+    this.isDeleteConfirmOpen = false;
+    this.pendingDeleteTripId = null;
   }
 }

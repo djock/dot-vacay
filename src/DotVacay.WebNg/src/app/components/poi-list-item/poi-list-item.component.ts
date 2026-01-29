@@ -1,21 +1,23 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule} from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PointOfInterestService } from '../../services/point-of-interest.service';
 import { PointOfInterest } from '../../models/point-of-interest.model';
 import { PointOfInterestType } from '../../enums/point-of-interest-type-enum';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'poi-list-item',
   templateUrl: './poi-list-item.component.html',
   standalone: true,
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, ConfirmDialogComponent]
 })
 export class PoiListItemComponent  {
   @Input() poi!: PointOfInterest;  
   @Input() currentDate: Date = new Date(); // Add this to track the current day being displayed
   @Output() onRefresh = new EventEmitter<boolean>();
   @Output() onEditPoi = new EventEmitter<PointOfInterest>();
+  isDeleteConfirmOpen: boolean = false;
   
   // Make enum accessible in template
   PointOfInterestType = PointOfInterestType;
@@ -59,18 +61,27 @@ export class PoiListItemComponent  {
       console.error('Cannot delete undefined POI');
       return;
     }
-    
-    if (confirm('Are you sure you want to delete this point of interest?')) {
-      this.pointOfInterestService.deletePointOfInterest(this.poi.id).subscribe({
-        next: (result) => {
-          this.onRefresh.emit(true);
-        },
-        error: (error) => {
-          console.error('Failed to delete point of interest', error);
-          this.onRefresh.emit(false);
-        }
-      });
+    this.isDeleteConfirmOpen = true;
+  }
+
+  confirmDeletePoi(): void {
+    if (!this.poi) {
+      return;
     }
+    this.pointOfInterestService.deletePointOfInterest(this.poi.id).subscribe({
+      next: (result) => {
+        this.onRefresh.emit(true);
+      },
+      error: (error) => {
+        console.error('Failed to delete point of interest', error);
+        this.onRefresh.emit(false);
+      }
+    });
+    this.isDeleteConfirmOpen = false;
+  }
+
+  cancelDeletePoi(): void {
+    this.isDeleteConfirmOpen = false;
   }
 
   openEditPoiModal(): void {

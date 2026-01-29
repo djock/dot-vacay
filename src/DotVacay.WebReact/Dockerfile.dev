@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN addgroup -g 1001 appuser && \
+    adduser -D -u 1001 -G appuser appuser
+
+COPY package*.json ./
+
+RUN npm install && chown -R appuser:appuser node_modules
+
+ENV PATH=/app/node_modules/.bin:$PATH
+
+COPY --chown=appuser:appuser . .
+
+USER appuser
+
+EXPOSE 50316
+
+CMD ["sh", "-c", "if [ ! -d node_modules ] || [ ! -d node_modules/@vitejs/plugin-react ]; then npm install; fi; npm run dev -- --host 0.0.0.0 --port 50316"]

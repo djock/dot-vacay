@@ -1,4 +1,4 @@
-﻿namespace DotVacay.Core.Common
+namespace DotVacay.Core.Common
 {
     public static class DomainErrors
     {
@@ -21,6 +21,12 @@
             public const string UserNotMember = "User is not a member of this trip";
             public const string NotOwner = "Only trip owners can perform this action";
             public const string OwnerCannotLeave = "Trip owner cannot leave the trip";
+        }
+
+        public static class TripList
+        {
+            public const string NotFound = "Trip list not found";
+            public const string TripListItemNotFound = "Trip list item not found";
         }
     }
 }

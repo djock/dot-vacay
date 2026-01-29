@@ -29,16 +29,17 @@ services:
 
   frontend:
     build:
-      context: ./src/DotVacay.WebNg
+      context: ./src/DotVacay.WebReact
       dockerfile: Dockerfile.dev
     container_name: dotvacay-frontend
     ports:
       - "50316:50316"
     volumes:
-      - ./src/DotVacay.WebNg:/app
+      - ./src/DotVacay.WebReact:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5111/api
     depends_on:
       - backend
     networks:
