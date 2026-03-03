@@ -45,7 +45,25 @@
     <p class="mt-1 text-xs text-slate-500">Add your first stop to start the day.</p>
   </div>
 
-  <div *ngFor="let poi of pointsOfInterest" class="mb-4">
+  <div *ngFor="let poi of pointsOfInterest; let i = index" class="mb-4">
+    <div class="mb-2 flex justify-end gap-2">
+      <button
+        type="button"
+        class="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500 disabled:opacity-40"
+        [disabled]="i === 0"
+        (click)="movePoi(poi, 'up')"
+      >
+        ↑ Move up
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500 disabled:opacity-40"
+        [disabled]="i === pointsOfInterest.length - 1"
+        (click)="movePoi(poi, 'down')"
+      >
+        ↓ Move down
+      </button>
+    </div>
     <poi-list-item
       [poi]="poi"
       [currentDate]="currentDate"

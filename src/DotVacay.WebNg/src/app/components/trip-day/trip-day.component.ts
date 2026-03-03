@@ -21,6 +21,7 @@ export class TripDayComponent implements OnInit {
   @Output() onAddPoi = new EventEmitter<Date>();
   @Output() onRefresh = new EventEmitter<Date>();
   @Output() onEditPoi = new EventEmitter<PointOfInterest>();
+  @Output() onMovePoi = new EventEmitter<{ day: Date, poi: PointOfInterest, direction: 'up' | 'down' }>();
   @Output() onGenerateAiSuggestions = new EventEmitter<{date: Date, location: string}>();
 
   isGeneratingSuggestions: boolean = false;
@@ -93,6 +94,10 @@ export class TripDayComponent implements OnInit {
     this.onEditPoi.emit(poi);
   }
 
+  movePoi(poi: PointOfInterest, direction: 'up' | 'down'): void {
+    this.onMovePoi.emit({ day: this.currentDate, poi, direction });
+  }
+
   generateAiSuggestions(): void {
     this.isGeneratingSuggestions = true;
     this.onGenerateAiSuggestions.emit({
@@ -105,5 +110,4 @@ export class TripDayComponent implements OnInit {
     this.isGeneratingSuggestions = status;
   }
 }
-
 

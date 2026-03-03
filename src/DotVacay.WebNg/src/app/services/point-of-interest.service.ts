@@ -14,6 +14,11 @@ export interface RequestResult {
 })
 export class PointOfInterestService {
   constructor(private apiService: ApiService) { }
+
+  updateTripDayIndex(poiId: string, tripDayIndex: number): Observable<RequestResult> {
+    return this.apiService.patch<RequestResult>(`/PointOfInterest/update/${poiId}/tripDayIndex`, tripDayIndex);
+  }
+
   deletePointOfInterest(poiId: string): Observable<RequestResult> {
     return this.apiService.delete<RequestResult>(`/PointOfInterest/delete/${poiId}`);
   }
@@ -46,6 +51,5 @@ export class PointOfInterestService {
     }
   }
 }
-
 
 
