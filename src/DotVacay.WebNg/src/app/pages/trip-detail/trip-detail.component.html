@@ -45,7 +45,30 @@
       </div>
     </div>
 
-    <div class="relative mt-16 border-l-2 border-slate-100 pb-24 pl-8">
+    <div class="mt-6 inline-flex rounded-2xl border border-slate-200 bg-white p-1 shadow-soft">
+      <button
+        type="button"
+        class="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
+        [class.bg-brand-500]="activeTab === 'plan'"
+        [class.text-white]="activeTab === 'plan'"
+        [class.text-slate-500]="activeTab !== 'plan'"
+        (click)="setActiveTab('plan')"
+      >
+        Plan
+      </button>
+      <button
+        type="button"
+        class="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
+        [class.bg-brand-500]="activeTab === 'map'"
+        [class.text-white]="activeTab === 'map'"
+        [class.text-slate-500]="activeTab !== 'map'"
+        (click)="setActiveTab('map')"
+      >
+        Map
+      </button>
+    </div>
+
+    <div class="relative mt-10 border-l-2 border-slate-100 pb-24 pl-8" *ngIf="activeTab === 'plan'">
       <div class="mb-8">
         <h2 class="text-2xl font-black text-slate-900">Daily Itinerary</h2>
         <p class="mt-1 text-sm font-medium text-slate-500">Build a timeline for every day of your trip.</p>
@@ -61,6 +84,7 @@
           (onAddPoi)="openAddPoiModal($event)"
           (onRefresh)="loadTripDetails()"
           (onEditPoi)="openEditPoiModal($event)"
+          (onMovePoi)="movePoiWithinDay($event)"
           (onGenerateAiSuggestions)="generateDayAiSuggestions($event)">
         </trip-day>
       </div>
@@ -72,7 +96,50 @@
       </div>
     </div>
 
-    <div class="mt-16 border-l-2 border-slate-100 pb-24 pl-8">
+    <div class="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft" *ngIf="activeTab === 'map'">
+      <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <h2 class="text-2xl font-black text-slate-900">Trip Map</h2>
+        <select
+          class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
+          [(ngModel)]="selectedMapDay"
+          (ngModelChange)="setActiveTab('map')"
+        >
+          <option value="all">All days</option>
+          <option *ngFor="let day of tripDays; let i = index" [value]="i">{{ day | date:'EEE, MMM d' }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="getMapPois().length === 0" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+        No POIs with coordinates found for this selection.
+      </div>
+
+      <div *ngIf="getMapPois().length > 0" class="grid gap-4 lg:grid-cols-3">
+        <div class="space-y-2 lg:col-span-1">
+          <button
+            type="button"
+            *ngFor="let poi of getMapPois()"
+            (click)="selectMapPoi(poi)"
+            class="w-full rounded-2xl border px-3 py-2 text-left transition-all duration-200"
+            [class.border-brand-500]="selectedMapPoi?.id === poi.id"
+            [class.bg-brand-50]="selectedMapPoi?.id === poi.id"
+            [class.border-slate-200]="selectedMapPoi?.id !== poi.id"
+          >
+            <p class="font-semibold text-slate-800">{{ poi.title }}</p>
+            <p class="text-xs text-slate-500">{{ poi.startDate | date:'MMM d, h:mm a' }}</p>
+          </button>
+        </div>
+
+        <div class="overflow-hidden rounded-2xl border border-slate-200 lg:col-span-2" *ngIf="selectedMapPoi">
+          <iframe
+            [attr.src]="getSelectedMapUrl()"
+            class="h-[420px] w-full"
+            title="Trip location map"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-16 border-l-2 border-slate-100 pb-24 pl-8" *ngIf="activeTab === 'plan'">
       <trip-lists-manager [tripId]="tripId"></trip-lists-manager>
     </div>
   </div>
@@ -106,19 +173,31 @@
 </div>
 
 <div class="fixed bottom-0 left-0 right-0 z-[60] flex items-center justify-between border-t border-slate-100 bg-white/90 px-6 py-3 backdrop-blur-lg md:hidden">
-  <a routerLink="/trips" class="flex h-11 flex-col items-center justify-center gap-1 text-brand-500 transition-all duration-300">
+  <button
+    type="button"
+    class="flex h-11 flex-col items-center justify-center gap-1 transition-all duration-300"
+    [class.text-brand-500]="activeTab === 'plan'"
+    [class.text-slate-400]="activeTab !== 'plan'"
+    (click)="setActiveTab('plan')"
+  >
     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
       <path d="M4 6h16M4 12h10M4 18h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span class="text-[10px] font-bold uppercase">Plan</span>
-  </a>
-  <button class="flex h-11 flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300">
+  </button>
+  <button
+    type="button"
+    class="flex h-11 flex-col items-center justify-center gap-1 transition-all duration-300"
+    [class.text-brand-500]="activeTab === 'map'"
+    [class.text-slate-400]="activeTab !== 'map'"
+    (click)="setActiveTab('map')"
+  >
     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
       <path d="M3 11l9-7 9 7-9 7-9-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span class="text-[10px] font-bold uppercase">Map</span>
   </button>
-  <button class="flex h-11 flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300">
+  <button class="flex h-11 flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300" type="button" (click)="setActiveTab('plan')">
     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
       <path d="M6 4h9l3 3v13H6z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M9 8h6M9 12h6M9 16h3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

@@ -3,21 +3,21 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TripService } from '../../services/trip.service';
 import { FormsModule } from '@angular/forms';
-import { EditPoiModal } from "../../components/edit-poi-modal/edit-poi-modal.component";
-import { TripDayComponent } from "../../components/trip-day/trip-day.component";
-import { TripListsManagerComponent } from "../../components/trip-lists-manager/trip-lists-manager.component";
-import { ConfirmDialogComponent } from "../../components/confirm-dialog/confirm-dialog.component";
+import { EditPoiModal } from '../../components/edit-poi-modal/edit-poi-modal.component';
+import { TripDayComponent } from '../../components/trip-day/trip-day.component';
+import { TripListsManagerComponent } from '../../components/trip-lists-manager/trip-lists-manager.component';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { PointOfInterest } from '../../models/point-of-interest.model';
-import { AiSuggestionService, PoiSuggestion } from '../../services/ai-suggestion.service';
+import { AiSuggestionService } from '../../services/ai-suggestion.service';
 import { PointOfInterestService } from '../../services/point-of-interest.service';
 
 @Component({
   selector: 'trip-detail',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
     EditPoiModal,
     TripDayComponent,
     TripListsManagerComponent,
@@ -41,17 +41,15 @@ export class TripDetailComponent implements OnInit {
   selectedDate: Date | null = null;
   isPoiDrawerOpen: boolean = false;
   isDeleteTripConfirmOpen: boolean = false;
-  
-  // Add these properties for AI testing
-  aiTestLoading: boolean = false;
-  aiTestSuccess: boolean = false;
-  aiTestError: string = '';
+  activeTab: 'plan' | 'map' = 'plan';
+  selectedMapDay: string = 'all';
+  selectedMapPoi: PointOfInterest | null = null;
 
   @ViewChildren(TripDayComponent) tripDayComponents!: QueryList<TripDayComponent>;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router, 
+    private router: Router,
     private tripService: TripService,
     private aiSuggestionService: AiSuggestionService,
     private pointOfInterestService: PointOfInterestService
@@ -74,6 +72,7 @@ export class TripDetailComponent implements OnInit {
           this.userIsOwner = result.userIsOwner;
 
           this.generateTripDays();
+          this.ensureSelectedMapPoi();
         } else if (result.errors?.length) {
           this.errorMessage = result.errors[0];
         }
@@ -91,7 +90,7 @@ export class TripDetailComponent implements OnInit {
     if (this.trip && this.trip.startDate && this.trip.endDate) {
       const startDate = new Date(this.trip.startDate);
       const endDate = new Date(this.trip.endDate);
-      
+
       let currentDate = new Date(startDate);
       while (currentDate <= endDate) {
         this.tripDays.push(new Date(currentDate));
@@ -104,49 +103,55 @@ export class TripDetailComponent implements OnInit {
     if (!this.trip || !this.trip.pointsOfInterest) {
       return [];
     }
-    
+
     const dayStart = new Date(day);
     dayStart.setHours(0, 0, 0, 0);
-    
+
     const dayEnd = new Date(day);
     dayEnd.setHours(23, 59, 59, 999);
-    
-    return this.trip.pointsOfInterest.filter((poi: PointOfInterest) => {
+
+    const dayPois = this.trip.pointsOfInterest.filter((poi: PointOfInterest) => {
       if (!poi.startDate || !poi.endDate) {
-        return false; // Skip POIs without dates
+        return false;
       }
-      
+
       const poiStartDate = new Date(poi.startDate);
       const poiEndDate = new Date(poi.endDate);
 
       return (
-        (poiStartDate >= dayStart && poiStartDate <= dayEnd) || // POI starts on this day
-        (poiEndDate >= dayStart && poiEndDate <= dayEnd) ||     // POI ends on this day
-        (poiStartDate <= dayStart && poiEndDate >= dayEnd)      // POI spans over this day
+        (poiStartDate >= dayStart && poiStartDate <= dayEnd) ||
+        (poiEndDate >= dayStart && poiEndDate <= dayEnd) ||
+        (poiStartDate <= dayStart && poiEndDate >= dayEnd)
       );
+    });
+
+    return dayPois.sort((a: PointOfInterest, b: PointOfInterest) => {
+      const indexA = a.tripDayIndex ?? Number.MAX_SAFE_INTEGER;
+      const indexB = b.tripDayIndex ?? Number.MAX_SAFE_INTEGER;
+      if (indexA !== indexB) {
+        return indexA - indexB;
+      }
+
+      const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+      const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+      return dateA - dateB;
     });
   }
 
   openAddPoiModal(date: Date): void {
-    this.selectedDate = date; // Set the selected date
-    this.selectedPoi = null; // Clear selected POI when adding new
+    this.selectedDate = date;
+    this.selectedPoi = null;
     this.isPoiDrawerOpen = true;
   }
 
   openEditPoiModal(poi: PointOfInterest): void {
     this.selectedPoi = poi;
-    this.selectedDate = null; // Clear selectedDate when editing existing POI
+    this.selectedDate = null;
     this.isPoiDrawerOpen = true;
   }
 
   closeEditTripModal(): void {
     this.isPoiDrawerOpen = false;
-  }
-
-  deletePointOfInterest(poi: PointOfInterest): void {
-    if (confirm('Are you sure you want to delete this point of interest?')) {
-      this.closeEditTripModal();
-    }
   }
 
   onPoiSaved(result: { success?: boolean } | boolean): void {
@@ -202,51 +207,32 @@ export class TripDetailComponent implements OnInit {
     }
   }
 
-  onPoiCreated(result: any): void {
-    this.successMessage = 'Trip created successfully!';
-    this.loadTripDetails(); 
-    this.closeEditTripModal(); 
-
-    // Clear success message after 5 seconds
-    setTimeout(() => {
-      this.successMessage = '';
-    }, 5000);
-  }
-
-  // This method is called when the AI Suggestions button is clicked on a specific day
-  generateDayAiSuggestions(event: {date: Date, location: string}): void {
-    // Find the corresponding trip day component
+  generateDayAiSuggestions(event: { date: Date, location: string }): void {
     const dayComponent = this.findTripDayComponent(event.date);
-    
-    // Set the component to loading state
+
     if (dayComponent) {
       dayComponent.setGeneratingStatus(true);
     }
 
-    const d = event.date; // local midnight
+    const d = event.date;
     const startDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
     const endDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
-    
-    // Create the request with the specific day's date and trip ID
+
     const request = {
       location: event.location,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       tripId: this.tripId
     };
-    
-    // Call the AI suggestion service
+
     this.aiSuggestionService.generateSuggestions(request).subscribe({
-      next: (result) => { 
+      next: (result) => {
         if (result.success) {
-          console.log(`Received ${result.suggestions.length} AI suggestions for ${startDate.toLocaleDateString()}`);
-          // Refresh data to show new POIs
           this.loadTripDetails();
         } else {
           console.error('Failed to generate AI suggestions:', result.errors);
         }
-        
-        // Update UI
+
         if (dayComponent) {
           dayComponent.setGeneratingStatus(false);
         }
@@ -260,17 +246,123 @@ export class TripDetailComponent implements OnInit {
     });
   }
 
-  // Helper method to find the TripDayComponent for a specific date
-  private findTripDayComponent(date: Date): TripDayComponent | undefined {
-    if (!this.tripDayComponents) return undefined;
-    
-    return this.tripDayComponents.find(component => {
-      const componentDate = new Date(component.currentDate);
-      return componentDate.getFullYear() === date.getFullYear() &&
-             componentDate.getMonth() === date.getMonth() &&
-             componentDate.getDate() === date.getDate();
+  async movePoiWithinDay(event: { day: Date, poi: PointOfInterest, direction: 'up' | 'down' }): Promise<void> {
+    const dayPois = [...this.getPointsOfInterestForDay(event.day)];
+    const currentIndex = dayPois.findIndex(poi => poi.id === event.poi.id);
+
+    if (currentIndex < 0) {
+      return;
+    }
+
+    const targetIndex = event.direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= dayPois.length) {
+      return;
+    }
+
+    [dayPois[currentIndex], dayPois[targetIndex]] = [dayPois[targetIndex], dayPois[currentIndex]];
+
+    const originalTripDayIndexes = dayPois.map(poi => ({ id: poi.id, tripDayIndex: poi.tripDayIndex }));
+
+    dayPois.forEach((poi, index) => {
+      poi.tripDayIndex = index;
     });
+
+    const updates = dayPois.map((poi, index) =>
+      new Promise<void>((resolve, reject) => {
+        this.pointOfInterestService.updateTripDayIndex(poi.id, index).subscribe({
+          next: (result) => {
+            if (result.success) {
+              resolve();
+              return;
+            }
+            reject(new Error(result.errors?.join(', ') || 'Failed to update order'));
+          },
+          error: () => reject(new Error('Failed to update order'))
+        });
+      })
+    );
+
+    try {
+      await Promise.all(updates);
+      this.successMessage = 'Day order updated';
+      setTimeout(() => this.successMessage = '', 2000);
+      this.loadTripDetails();
+    } catch {
+      originalTripDayIndexes.forEach(original => {
+        const poi = this.trip?.pointsOfInterest?.find((tripPoi: PointOfInterest) => tripPoi.id === original.id);
+        if (poi) {
+          poi.tripDayIndex = original.tripDayIndex;
+        }
+      });
+      this.errorMessage = 'Failed to save the updated order';
+    }
   }
 
-  // Remove the saveSuggestions method as it's no longer needed
+  setActiveTab(tab: 'plan' | 'map'): void {
+    this.activeTab = tab;
+    this.ensureSelectedMapPoi();
+  }
+
+  getMapPois(): PointOfInterest[] {
+    if (!this.trip?.pointsOfInterest) {
+      return [];
+    }
+
+    const allWithCoords = this.trip.pointsOfInterest.filter((poi: PointOfInterest) =>
+      poi.latitude !== undefined && poi.latitude !== null && poi.longitude !== undefined && poi.longitude !== null
+    );
+
+    if (this.selectedMapDay === 'all') {
+      return allWithCoords;
+    }
+
+    const dayIndex = Number(this.selectedMapDay);
+    const day = this.tripDays[dayIndex];
+    if (!day) {
+      return allWithCoords;
+    }
+
+    const dayIds = new Set(this.getPointsOfInterestForDay(day).map(poi => poi.id));
+    return allWithCoords.filter((poi: PointOfInterest) => dayIds.has(poi.id));
+  }
+
+  selectMapPoi(poi: PointOfInterest): void {
+    this.selectedMapPoi = poi;
+  }
+
+  getSelectedMapUrl(): string {
+    const poi = this.selectedMapPoi;
+    if (!poi?.latitude || !poi?.longitude) {
+      return '';
+    }
+
+    const delta = 0.03;
+    const bbox = `${poi.longitude - delta}%2C${poi.latitude - delta}%2C${poi.longitude + delta}%2C${poi.latitude + delta}`;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${poi.latitude}%2C${poi.longitude}`;
+  }
+
+  private ensureSelectedMapPoi(): void {
+    const mapPois = this.getMapPois();
+    if (mapPois.length === 0) {
+      this.selectedMapPoi = null;
+      return;
+    }
+
+    if (!this.selectedMapPoi || !mapPois.some(poi => poi.id === this.selectedMapPoi?.id)) {
+      this.selectedMapPoi = mapPois[0];
+    }
+  }
+
+  private findTripDayComponent(date: Date): TripDayComponent | undefined {
+    if (!this.tripDayComponents) {
+      return undefined;
+    }
+
+    return this.tripDayComponents.find(component => {
+      const componentDate = new Date(component.currentDate);
+      return componentDate.getFullYear() === date.getFullYear()
+        && componentDate.getMonth() === date.getMonth()
+        && componentDate.getDate() === date.getDate();
+    });
+  }
 }

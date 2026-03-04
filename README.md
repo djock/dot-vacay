@@ -224,6 +224,10 @@ For production environments, set environment variables according to your hosting
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Product Planning
+
+- Wanderlog gap analysis implementation plan: `docs/wanderlog-lite-implementation-plan.md`
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
