@@ -108,6 +108,8 @@ export const mapApiPoiToUi = (poi: ApiPointOfInterest, fallbackLocation: string)
     time: formatTime(poi.startDate),
     notes: notes,
     url: poi.url || undefined,
+    estimatedCost: poi.estimatedCost ?? undefined,
+    currency: poi.currency ?? undefined,
     raw: poi
   };
 };
@@ -126,6 +128,7 @@ export const buildItinerary = (trip: ApiTrip): DayItinerary[] => {
     const dayIso = current.toISOString();
     const items = (trip.pointsOfInterest || [])
       .filter((poi) => includesDay(current, poi.startDate || undefined, poi.endDate || undefined))
+      .sort((a, b) => (a.tripDayIndex ?? Number.MAX_SAFE_INTEGER) - (b.tripDayIndex ?? Number.MAX_SAFE_INTEGER))
       .map((poi) => mapApiPoiToUi(poi, trip.title));
 
     days.push({
@@ -160,6 +163,18 @@ export const computeTripStatus = (trip: ApiTrip): 'future' | 'current' | 'past' 
 };
 
 export const mapApiTripToUi = (trip: ApiTrip): Trip => {
+  let localBudget: { budgetAmount?: number | null; budgetCurrency?: string | null } = {};
+  if (typeof window !== 'undefined') {
+    const raw = window.localStorage.getItem(`dotvacay-budget-${trip.id}`);
+    if (raw) {
+      try {
+        localBudget = JSON.parse(raw);
+      } catch {
+        localBudget = {};
+      }
+    }
+  }
+
   return {
     id: trip.id,
     destination: trip.title,
@@ -167,6 +182,8 @@ export const mapApiTripToUi = (trip: ApiTrip): Trip => {
     endDate: trip.endDate || new Date().toISOString(),
     status: computeTripStatus(trip),
     coverImage: `https://picsum.photos/seed/trip-${trip.id}/800/400`,
+    budgetAmount: trip.budgetAmount ?? localBudget.budgetAmount ?? undefined,
+    budgetCurrency: trip.budgetCurrency ?? localBudget.budgetCurrency ?? undefined,
     itinerary: buildItinerary(trip),
     raw: trip
   };

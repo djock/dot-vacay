@@ -11,6 +11,8 @@ export interface POI {
   notes?: string;
   url?: string;
   imageUrl?: string;
+  estimatedCost?: number;
+  currency?: string;
   raw?: ApiPointOfInterest;
 }
 
@@ -26,6 +28,8 @@ export interface Trip {
   endDate: string;
   status: 'future' | 'current' | 'past';
   coverImage: string;
+  budgetAmount?: number;
+  budgetCurrency?: string;
   itinerary: DayItinerary[];
   raw?: ApiTrip;
 }
@@ -45,6 +49,8 @@ export interface ApiTrip {
   endDate?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  budgetAmount?: number | null;
+  budgetCurrency?: string | null;
   pointsOfInterest?: ApiPointOfInterest[] | null;
   tripLists?: ApiTripList[] | null;
 }
@@ -61,6 +67,8 @@ export interface ApiPointOfInterest {
   latitude?: number | null;
   longitude?: number | null;
   tripDayIndex?: number | null;
+  estimatedCost?: number | null;
+  currency?: string | null;
 }
 
 export interface ApiTripList {
