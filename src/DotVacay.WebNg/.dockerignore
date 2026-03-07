@@ -1,9 +1,0 @@
-node_modules/
-dist/
-.angular/
-.git/
-.gitignore
-*.md
-.DS_Store
-.env
-coverage/

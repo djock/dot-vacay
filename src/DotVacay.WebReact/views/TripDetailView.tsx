@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POI, POIType, Trip } from '../types';
 import { buildPoiDescription, uiTypeToApi } from '../services/mappers';
 import { api } from '../services/api';
+import { GeoSuggestion, resolveCountryScope, searchPoiSuggestionsInCountry } from '../services/geoSearch';
 
 interface TripDetailViewProps {
   trip: Trip;
@@ -53,10 +54,13 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({
   const [inviteRole, setInviteRole] = useState<JoinRole>('Viewer');
   const [joinTripId, setJoinTripId] = useState<string>('');
 
-  const [poiSearchResults, setPoiSearchResults] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [poiSearchResults, setPoiSearchResults] = useState<GeoSuggestion[]>([]);
   const [poiSearchOpen, setPoiSearchOpen] = useState(false);
   const [poiSearchLoading, setPoiSearchLoading] = useState(false);
   const poiSearchDebounceRef = useRef<number | null>(null);
+  const [tripCountryCode, setTripCountryCode] = useState<string | null>(null);
+  const [tripCountryName, setTripCountryName] = useState<string | null>(null);
+  const [countryScopeLoading, setCountryScopeLoading] = useState(false);
 
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; payload: any }>>([]);
 
@@ -68,6 +72,30 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({
     setTripBudgetCurrency(trip.budgetCurrency || 'USD');
     setJoinTripId(String(trip.id));
   }, [trip.id, trip.budgetAmount, trip.budgetCurrency]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCountryScope = async () => {
+      setCountryScopeLoading(true);
+      try {
+        const scope = await resolveCountryScope(trip.raw?.latitude, trip.raw?.longitude, trip.destination);
+        if (!isMounted) return;
+        setTripCountryCode(scope?.countryCode || null);
+        setTripCountryName(scope?.countryName || null);
+      } catch {
+        if (!isMounted) return;
+        setTripCountryCode(null);
+        setTripCountryName(null);
+      } finally {
+        if (isMounted) setCountryScopeLoading(false);
+      }
+    };
+
+    loadCountryScope();
+    return () => {
+      isMounted = false;
+    };
+  }, [trip.id, trip.destination, trip.raw?.latitude, trip.raw?.longitude]);
 
   useEffect(() => {
     const raw = localStorage.getItem('dotvacay-templates');
@@ -187,12 +215,16 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({
       return;
     }
 
+    if (!tripCountryCode) {
+      setPoiSearchResults([]);
+      setPoiSearchOpen(false);
+      return;
+    }
+
     setPoiSearchLoading(true);
     poiSearchDebounceRef.current = window.setTimeout(async () => {
       try {
-        const results = await api.get<Array<{ display_name: string; lat: string; lon: string }>>(
-          `/Location/searchPoi?query=${encodeURIComponent(query)}`
-        );
+        const results = await searchPoiSuggestionsInCountry(query, tripCountryCode);
         setPoiSearchResults(results || []);
         setPoiSearchOpen(true);
       } catch {
@@ -204,7 +236,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({
     }, 250);
   };
 
-  const selectPoiLocation = (location: { display_name: string; lat: string; lon: string }) => {
+  const selectPoiLocation = (location: GeoSuggestion) => {
     const name = location.display_name.split(',')[0];
     setPoiName(name);
     setPoiLocation(location.display_name);
@@ -489,7 +521,12 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({
         <div className="fixed inset-0 bg-black/50 grid place-items-center z-50 p-4">
           <div className="bg-white rounded-2xl p-5 w-full max-w-lg space-y-3">
             <h3 className="text-xl font-bold">{editingPoi ? 'Edit POI' : 'Add POI'}</h3>
-            <input value={poiName} onChange={(e) => { setPoiName(e.target.value); setPoiLocation(e.target.value); searchPoiLocations(e.target.value); }} className="w-full border rounded-xl px-3 py-2" placeholder="Place name" />
+            <input value={poiName} onChange={(e) => { setPoiName(e.target.value); setPoiLocation(e.target.value); searchPoiLocations(e.target.value); }} className="w-full border rounded-xl px-3 py-2" placeholder="Place name (cafe, restaurant, museum...)" />
+            <p className="text-xs text-slate-500">
+              {countryScopeLoading && 'Detecting trip country for scoped place suggestions...'}
+              {!countryScopeLoading && tripCountryCode && `Place suggestions are limited to ${tripCountryName || tripCountryCode.toUpperCase()}.`}
+              {!countryScopeLoading && !tripCountryCode && 'Country scope unavailable for this trip. Set destination using trip suggestions first.'}
+            </p>
             {poiSearchOpen && <div className="border rounded-xl max-h-28 overflow-auto">{poiSearchLoading ? <p className="p-2 text-sm">Searching...</p> : poiSearchResults.map((location) => <button className="block w-full text-left px-3 py-2 hover:bg-slate-50" key={location.display_name} onClick={() => selectPoiLocation(location)}>{location.display_name}</button>)}</div>}
             <div className="grid grid-cols-2 gap-2">
               <input type="time" value={poiTime} onChange={(e) => setPoiTime(e.target.value)} className="border rounded-xl px-3 py-2" />

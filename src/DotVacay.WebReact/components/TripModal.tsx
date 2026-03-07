@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ApiTrip } from '../types';
-import { api } from '../services/api';
+import { GeoSuggestion, searchDestinationSuggestions } from '../services/geoSearch';
 
 interface TripModalProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, mode, initialData, error,
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [locationResults, setLocationResults] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [locationResults, setLocationResults] = useState<GeoSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const debounceRef = useRef<number | null>(null);
 
@@ -70,6 +70,8 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, mode, initialData, error,
     setEndDate(toDate(end));
     setLatitude(0);
     setLongitude(0);
+    setLocationResults([]);
+    setShowDropdown(false);
   }, [isOpen, mode, initialData]);
 
   if (!isOpen) return null;
@@ -88,9 +90,7 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, mode, initialData, error,
     setIsLoading(true);
     debounceRef.current = window.setTimeout(async () => {
       try {
-        const results = await api.get<Array<{ display_name: string; lat: string; lon: string }>>(
-          `/Location/search?query=${encodeURIComponent(query)}`
-        );
+        const results = await searchDestinationSuggestions(query);
         setLocationResults(results || []);
         setShowDropdown(true);
       } catch (err) {
@@ -103,7 +103,7 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, mode, initialData, error,
     }, 250);
   };
 
-  const selectLocation = (location: { display_name: string; lat: string; lon: string }) => {
+  const selectLocation = (location: GeoSuggestion) => {
     const name = location.display_name.split(',')[0];
     setTitle(name);
     setLatitude(Number(location.lat) || 0);
@@ -156,15 +156,21 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, mode, initialData, error,
                   locationResults.map((location) => (
                     <button
                       key={`${location.display_name}-${location.lat}-${location.lon}`}
-                      className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
+                      className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-start justify-between gap-3"
                       onClick={() => selectLocation(location)}
                       type="button"
                     >
-                      {location.display_name}
+                      <span>{location.display_name}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                        {location.category}
+                      </span>
                     </button>
                   ))}
               </div>
             )}
+            <p className="mt-2 text-xs text-slate-500">
+              Suggestions include countries, cities, and landmarks.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>

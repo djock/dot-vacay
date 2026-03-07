@@ -11,12 +11,12 @@ services:
       - ./src:/app/src
       - dotvacay_db:/app/data
     environment:
-      - DOTVACAY_JWT_KEY=${DOTVACAY_JWT_KEY}
-      - DOTVACAY_JWT_ISSUER=${DOTVACAY_JWT_ISSUER}
-      - DOTVACAY_JWT_AUDIENCE=${DOTVACAY_JWT_AUDIENCE}
-      - DOTVACAY_JWT_EXPIREDAYS=${DOTVACAY_JWT_EXPIREDAYS:-30}
-      - DOTVACAY_CORS_ORIGINS=${DOTVACAY_CORS_ORIGINS}
-      - DOTVACAY_CONNECTION_STRING=Data Source=/app/data/dotvacay.db
+      - DOTVACAY_JWT__KEY=${DOTVACAY_JWT__KEY}
+      - DOTVACAY_JWT__ISSUER=${DOTVACAY_JWT__ISSUER}
+      - DOTVACAY_JWT__AUDIENCE=${DOTVACAY_JWT__AUDIENCE}
+      - DOTVACAY_JWT__EXPIREDAYS=${DOTVACAY_JWT__EXPIREDAYS:-30}
+      - DOTVACAY_CORS__ALLOWEDORIGINS=${DOTVACAY_CORS__ALLOWEDORIGINS}
+      - DOTVACAY_CONNECTIONSTRINGS__DEFAULTCONNECTION=${DOTVACAY_CONNECTIONSTRINGS__DEFAULTCONNECTION:-Data Source=/app/data/dotvacay.db}
       - DOTVACAY_DB_PATH=${DOTVACAY_DB_PATH:-/app/data/dotvacay.db}
       - DOTVACAY_OPENAI_APIKEY=${DOTVACAY_OPENAI_APIKEY:-}
     networks:
@@ -39,7 +39,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:5111/api
+      - VITE_API_URL=http://192.168.1.187:5111/api
     depends_on:
       - backend
     networks:
